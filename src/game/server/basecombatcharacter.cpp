@@ -103,6 +103,8 @@ BEGIN_DATADESC( CBaseCombatCharacter )
 	DEFINE_AUTO_ARRAY( m_iAmmo, FIELD_INTEGER ),
 	DEFINE_AUTO_ARRAY( m_hMyWeapons, FIELD_EHANDLE ),
 	DEFINE_FIELD( m_hActiveWeapon, FIELD_EHANDLE ),
+	DEFINE_FIELD( m_flTimeOfLastInjury, FIELD_FLOAT ),
+	DEFINE_FIELD( m_nRelativeDirectionOfLastInjury, FIELD_INTEGER ),
 	DEFINE_FIELD( m_bForceServerRagdoll, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_bPreventWeaponPickup, FIELD_BOOLEAN ),
 
@@ -196,7 +198,10 @@ IMPLEMENT_SERVERCLASS_ST(CBaseCombatCharacter, DT_BaseCombatCharacter)
 	// Data that only gets sent to the local player.
 	SendPropDataTable( "bcc_localdata", 0, &REFERENCE_SEND_TABLE(DT_BCCLocalPlayerExclusive), SendProxy_SendBaseCombatCharacterLocalDataTable ),
 
+	SendPropInt( SENDINFO( m_LastHitGroup ), 4, SPROP_UNSIGNED ),
 	SendPropEHandle( SENDINFO( m_hActiveWeapon ) ),
+	SendPropTime( SENDINFO( m_flTimeOfLastInjury ) ),
+	SendPropInt( SENDINFO( m_nRelativeDirectionOfLastInjury ), 3, SPROP_UNSIGNED ),
 	SendPropArray3( SENDINFO_ARRAY3(m_hMyWeapons), SendPropEHandle( SENDINFO_ARRAY(m_hMyWeapons) ) ),
 
 #ifdef INVASION_DLL
@@ -734,6 +739,8 @@ CBaseCombatCharacter::CBaseCombatCharacter( void )
 	m_lastNavArea = NULL;
 	m_registeredNavTeam = TEAM_INVALID;
 
+	m_LastHitGroup = HITGROUP_GENERIC;
+
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
 		m_hMyWeapons.Set( i, NULL );
@@ -775,6 +782,9 @@ void CBaseCombatCharacter::Spawn( void )
 	{
 		m_damageHistory[t].team = TEAM_INVALID;
 	}
+
+	m_flTimeOfLastInjury = 0.0f;
+	m_LastHitGroup = HITGROUP_GENERIC;
 
 	// not standing on a nav area yet
 	ClearLastKnownArea();
@@ -2099,31 +2109,47 @@ void CBaseCombatCharacter::Weapon_Equip( CBaseCombatWeapon *pWeapon )
 		}
 		else
 #endif // HL2_DLL
-		GiveAmmo(pWeapon->GetDefaultClip1(), pWeapon->m_iPrimaryAmmoType); 
+		{
+			// non-clip, exhaustible ammo ( such as grenades ) is still held on player.
+			CBaseCombatCharacter * pOwner = NULL;
+
+			if ( pWeapon->GetWpnData().iFlags & ITEM_FLAG_EXHAUSTIBLE )
+			{
+				pOwner = this;
+				pWeapon->SetReserveAmmoCount( AMMO_POSITION_PRIMARY, pWeapon->GetDefaultClip1(), ShouldPickupItemSilently( this ), pOwner );
+			}
+		}
 	}
 	// If default ammo given is greater than clip
 	// size, fill clips and give extra ammo
-	else if (pWeapon->GetDefaultClip1() >  pWeapon->GetMaxClip1() )
-	{
-		pWeapon->m_iClip1 = pWeapon->GetMaxClip1();
-		GiveAmmo( (pWeapon->GetDefaultClip1() - pWeapon->GetMaxClip1()), pWeapon->m_iPrimaryAmmoType); 
-	}
+//	else if (pWeapon->GetDefaultClip1() >  pWeapon->GetMaxClip1() )
+//	{
+//		pWeapon->m_iClip1 = pWeapon->GetMaxClip1();
+// 		pWeapon->SetReserveAmmoCount( AMMO_POSITION_PRIMARY, (pWeapon->GetDefaultClip1() - pWeapon->GetMaxClip1())); 
+//	}
 
 	// ----------------------
 	//  Give Secondary Ammo
 	// ----------------------
 	// If gun doesn't use clips, just give ammo
-	if (pWeapon->GetMaxClip2() == -1)
+	if ( !pWeapon->UsesClipsForAmmo2() )
 	{
-		GiveAmmo(pWeapon->GetDefaultClip2(), pWeapon->m_iSecondaryAmmoType); 
+		// non-clip, exhaustible ammo ( such as grenades ) is still held on player.
+		CBaseCombatCharacter * pOwner = NULL;
+
+		if ( pWeapon->GetWpnData().iFlags & ITEM_FLAG_EXHAUSTIBLE )
+		{
+			pOwner = this;
+			pWeapon->SetReserveAmmoCount( AMMO_POSITION_SECONDARY, pWeapon->GetDefaultClip2(), ShouldPickupItemSilently( this ), pOwner );
+		}
 	}
 	// If default ammo given is greater than clip
 	// size, fill clips and give extra ammo
-	else if ( pWeapon->GetDefaultClip2() > pWeapon->GetMaxClip2() )
-	{
-		pWeapon->m_iClip2 = pWeapon->GetMaxClip2();
-		GiveAmmo( (pWeapon->GetDefaultClip2() - pWeapon->GetMaxClip2()), pWeapon->m_iSecondaryAmmoType); 
-	}
+//	else if ( pWeapon->GetDefaultClip2() > pWeapon->GetMaxClip2() )
+//	{
+//		pWeapon->m_iClip2 = pWeapon->GetMaxClip2();
+//		GiveAmmo( (pWeapon->GetDefaultClip2() - pWeapon->GetMaxClip2()), pWeapon->m_iSecondaryAmmoType); 
+//	}
 
 	pWeapon->Equip( this );
 
@@ -2181,8 +2207,15 @@ bool CBaseCombatCharacter::Weapon_EquipAmmoOnly( CBaseCombatWeapon *pWeapon )
 			int	primaryGiven	= (pWeapon->UsesClipsForAmmo1()) ? pWeapon->m_iClip1 : pWeapon->GetPrimaryAmmoCount();
 			int secondaryGiven	= (pWeapon->UsesClipsForAmmo2()) ? pWeapon->m_iClip2 : pWeapon->GetSecondaryAmmoCount();
 
-			int takenPrimary   = GiveAmmo( primaryGiven, pWeapon->m_iPrimaryAmmoType); 
-			int takenSecondary = GiveAmmo( secondaryGiven, pWeapon->m_iSecondaryAmmoType); 
+			bool bSuppressSound = ShouldPickupItemSilently( this );
+
+			CBaseCombatCharacter * pOwner = NULL;
+
+			if ( pWeapon->GetWpnData().iFlags & ITEM_FLAG_EXHAUSTIBLE )
+				pOwner = this;
+
+			int takenPrimary = pWeapon->GiveReserveAmmo( AMMO_POSITION_PRIMARY, primaryGiven, bSuppressSound, pOwner );
+			int takenSecondary = pWeapon->GiveReserveAmmo( AMMO_POSITION_SECONDARY, secondaryGiven, bSuppressSound, pOwner );
 			
 			if( pWeapon->UsesClipsForAmmo1() )
 			{
@@ -2228,28 +2261,6 @@ bool CBaseCombatCharacter::Weapon_SlotOccupied( CBaseCombatWeapon *pWeapon )
 		return false;
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns the weapon (if any) in the requested slot
-// Input  : slot - which slot to poll
-//-----------------------------------------------------------------------------
-CBaseCombatWeapon *CBaseCombatCharacter::Weapon_GetSlot( int slot ) const
-{
-	int	targetSlot = slot;
-
-	// Check for that slot being occupied already
-	for ( int i=0; i < MAX_WEAPONS; i++ )
-	{
-		if ( m_hMyWeapons[i].Get() != NULL )
-		{
-			// If the slots match, it's already occupied
-			if ( m_hMyWeapons[i]->GetSlot() == targetSlot )
-				return m_hMyWeapons[i];
-		}
-	}
-	
-	return NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -2393,9 +2404,9 @@ int CBaseCombatCharacter::OnTakeDamage( const CTakeDamageInfo &info )
 	{
 		int attackerTeam = info.GetAttacker()->GetTeamNumber();
 
-		m_hasBeenInjured |= ( 1 << attackerTeam );
+		m_hasBeenInjured |= (1 << attackerTeam);
 
-		for( int i=0; i<MAX_DAMAGE_TEAMS; ++i )
+		for ( int i = 0; i<MAX_DAMAGE_TEAMS; ++i )
 		{
 			if ( m_damageHistory[i].team == attackerTeam )
 			{
@@ -2412,11 +2423,57 @@ int CBaseCombatCharacter::OnTakeDamage( const CTakeDamageInfo &info )
 				break;
 			}
 		}
+
+		m_flTimeOfLastInjury = gpGlobals->curtime;
+
+		// Figure out what relative direction it hit from
+		Vector vDamageDirection = info.GetDamageForce();
+		VectorNormalize( vDamageDirection );
+
+		Vector vForward, vRight;
+		if ( IsPlayer() )
+		{
+			AngleVectors( EyeAngles(), &vForward, &vRight, NULL );
+		}
+		else
+		{
+			GetVectors( &vForward, &vRight, NULL );
+		}
+
+		// Try front and back
+		float flDamageDirectionDot = vForward.Dot( vDamageDirection );
+
+		if ( flDamageDirectionDot <= -0.5f )
+		{
+			m_nRelativeDirectionOfLastInjury = DAMAGED_DIR_FRONT;
+		}
+		else if ( flDamageDirectionDot >= 0.5f )
+		{
+			m_nRelativeDirectionOfLastInjury = DAMAGED_DIR_BACK;
+		}
+		else
+		{
+			// Try left and right sides
+			float flDamageDirectionDot = vRight.Dot( vDamageDirection );
+
+			if ( flDamageDirectionDot <= -0.5f )
+			{
+				m_nRelativeDirectionOfLastInjury = DAMAGED_DIR_RIGHT;
+			}
+			else if ( flDamageDirectionDot >= 0.5f )
+			{
+				m_nRelativeDirectionOfLastInjury = DAMAGED_DIR_LEFT;
+			}
+			else
+			{
+				m_nRelativeDirectionOfLastInjury = DAMAGED_DIR_NONE;
+			}
+		}
 	}
 
-	switch( m_lifeState )
+	switch ( m_lifeState )
 	{
-	case LIFE_ALIVE:
+		case LIFE_ALIVE:
 		retVal = OnTakeDamage_Alive( info );
 		if ( m_iHealth <= 0 )
 		{
@@ -2425,7 +2482,7 @@ int CBaseCombatCharacter::OnTakeDamage( const CTakeDamageInfo &info )
 			{
 				pPhysics->EnableCollisions( false );
 			}
-			
+
 			bool bGibbed = false;
 
 			Event_Killed( info );
@@ -2435,7 +2492,7 @@ int CBaseCombatCharacter::OnTakeDamage( const CTakeDamageInfo &info )
 			{
 				bGibbed = Event_Gibbed( info );
 			}
-			
+
 			if ( bGibbed == false )
 			{
 				Event_Dying( info );
@@ -2444,11 +2501,11 @@ int CBaseCombatCharacter::OnTakeDamage( const CTakeDamageInfo &info )
 		return retVal;
 		break;
 
-	case LIFE_DYING:
+		case LIFE_DYING:
 		return OnTakeDamage_Dying( info );
-	
-	default:
-	case LIFE_DEAD:
+
+		default:
+		case LIFE_DEAD:
 		retVal = OnTakeDamage_Dead( info );
 		if ( m_iHealth <= 0 && g_pGameRules->Damage_ShouldGibCorpse( info.GetDamageType() ) && ShouldGib( info ) )
 		{
@@ -2462,6 +2519,9 @@ int CBaseCombatCharacter::OnTakeDamage( const CTakeDamageInfo &info )
 
 int CBaseCombatCharacter::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 {
+	if ( GetFlags() & FL_GODMODE )
+		return 0;
+
 	// grab the vector of the incoming attack. ( pretend that the inflictor is a little lower than it really is, so the body will tend to fly upward a bit).
 	Vector vecDir = vec3_origin;
 	if (info.GetInflictor())
@@ -2979,7 +3039,7 @@ int CBaseCombatCharacter::GiveAmmo( int iCount, int iAmmoIndex, bool bSuppressSo
 	if ( iAmmoIndex < 0 || iAmmoIndex >= MAX_AMMO_SLOTS )
 		return 0;
 
-	int iMax = GetAmmoDef()->MaxCarry(iAmmoIndex);
+	int iMax = GetAmmoDef()->MaxCarry(iAmmoIndex, this);
 	int iAdd = MIN( iCount, iMax - m_iAmmo[iAmmoIndex] );
 	if ( iAdd < 1 )
 		return 0;

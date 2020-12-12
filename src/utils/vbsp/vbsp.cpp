@@ -56,6 +56,7 @@ bool		g_NodrawTriggers = false;
 bool		g_DisableWaterLighting = false;
 bool		g_bAllowDetailCracks = false;
 bool		g_bNoVirtualMesh = false;
+bool		g_bNoDefaultCubemaps = false;
 
 float		g_defaultLuxelSize = DEFAULT_LUXEL_SIZE;
 float		g_luxelScale = 1.0f;
@@ -859,7 +860,8 @@ void ProcessModels (void)
 	}
 
 	// Turn the skybox into a cubemap in case we don't build env_cubemap textures.
-	Cubemap_CreateDefaultCubemaps();
+	if ( !g_bNoDefaultCubemaps )
+		Cubemap_CreateDefaultCubemaps();
 	EndBSPFile ();
 }
 
@@ -1136,6 +1138,10 @@ int RunVBSP( int argc, char **argv )
 		else if ( !Q_stricmp( argv[i], "-FullMinidumps" ) )
 		{
 			EnableFullMinidumps( true );
+		}
+		else if ( !Q_stricmp( argv[i], "-nodefaultcubemaps" ) )
+		{
+			g_bNoDefaultCubemaps = true;
 		}
 		else if ( !Q_stricmp( argv[i], "-embed" ) && i < argc - 1 )
 		{

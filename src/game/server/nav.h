@@ -98,6 +98,8 @@ enum NavAttributeType
 	NAV_MESH_FIRST_CUSTOM	= 0x00010000,				// apps may define custom app-specific bits starting with this value
 	NAV_MESH_LAST_CUSTOM	= 0x04000000,				// apps must not define custom app-specific bits higher than with this value
 
+	NAV_MESH_BLOCKED_PROPDOOR = 0x10000000,				// area is blocked by prop_door_rotating 
+
 	NAV_MESH_FUNC_COST		= 0x20000000,				// area has designer specified cost controlled by func_nav_cost entities
 	NAV_MESH_HAS_ELEVATOR	= 0x40000000,				// area is in an elevator's path
 	NAV_MESH_NAV_BLOCKER	= 0x80000000				// area is blocked by nav blocker ( Alas, needed to hijack a bit in the attributes to get within a cache line [7/24/2008 tom])

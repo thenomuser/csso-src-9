@@ -494,8 +494,11 @@ void CNewParticleEffect::DebugDrawBbox ( bool bCulled )
 		 
 	if ( bDraw )
 	{
-		debugoverlay->AddBoxOverlay( center, mins, maxs, QAngle( 0, 0, 0 ), r, g, b, 16, 0 );
-		debugoverlay->AddTextOverlayRGB( center, 0, 0, r, g, b, 64, "%s:(%d)", GetEffectName(), m_nActiveParticles );
+		if ( debugoverlay )
+		{
+			debugoverlay->AddBoxOverlay( center, mins, maxs, QAngle( 0, 0, 0 ), r, g, b, 16, 0 );
+			debugoverlay->AddTextOverlayRGB( center, 0, 0, r, g, b, 64, "%s:(%d)", GetEffectName(), m_nActiveParticles );
+		}
 	}
 }
 
@@ -513,9 +516,10 @@ int CNewParticleEffect::DrawModel( int flags )
 		return 0;
 	
 	if ( ( flags & ( STUDIO_SHADOWDEPTHTEXTURE | STUDIO_SSAODEPTHTEXTURE ) ) != 0 )
-	{
 		return 0;
-	}
+
+	if ( m_hOwner && m_hOwner->IsDormant() )
+		return 0;
 	
 	// do distance cull check here. We do it here instead of in particles so we can easily only do
 	// it for root objects, not bothering to cull children individually

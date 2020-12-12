@@ -114,6 +114,8 @@ DEFPARTICLE_ATTRIBUTE( TRACE_P1, 18 );						// end pnt of trace
 DEFPARTICLE_ATTRIBUTE( TRACE_HIT_T, 19 );					// 0..1 if hit
 DEFPARTICLE_ATTRIBUTE( TRACE_HIT_NORMAL, 20 );				// 0 0 0 if no hit
 
+DEFPARTICLE_ATTRIBUTE( NORMAL, 21 );
+
 
 #define MAX_PARTICLE_CONTROL_POINTS 64
 
@@ -2062,6 +2064,7 @@ private:
 
 	// Default attribute values
 	Color m_ConstantColor;
+	Vector m_ConstantNormal;
 	float m_flConstantRadius;
 	float m_flConstantRotation;
 	float m_flConstantRotationSpeed;

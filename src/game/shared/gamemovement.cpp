@@ -920,10 +920,9 @@ void CBasePlayer::UpdateWetness()
 //-----------------------------------------------------------------------------
 void CGameMovement::CategorizeGroundSurface( trace_t &pm )
 {
-	IPhysicsSurfaceProps *physprops = MoveHelper()->GetSurfaceProps();
 	player->m_surfaceProps = pm.surface.surfaceProps;
-	player->m_pSurfaceData = physprops->GetSurfaceData( player->m_surfaceProps );
-	physprops->GetPhysicsProperties( player->m_surfaceProps, NULL, NULL, &player->m_surfaceFriction, NULL );
+	player->m_pSurfaceData = MoveHelper()->GetSurfaceProps()->GetSurfaceData( player->m_surfaceProps );
+	MoveHelper()->GetSurfaceProps()->GetPhysicsProperties( player->m_surfaceProps, NULL, NULL, &player->m_surfaceFriction, NULL );
 	
 	// HACKHACK: Scale this to fudge the relationship between vphysics friction values and player friction values.
 	// A value of 0.8f feels pretty normal for vphysics, whereas 1.0f is normal for players.
@@ -3394,7 +3393,7 @@ int CGameMovement::CheckStuck( void )
 	}
 
 	// Deal with stuckness...
-#ifndef DEDICATED
+#ifndef SWDS
 	if ( developer.GetBool() )
 	{
 		bool isServer = player->IsServer();
@@ -3957,6 +3956,19 @@ void CGameMovement::CheckFalling( void )
 
 	// let any subclasses know that the player has landed and how hard
 	OnLand(player->m_Local.m_flFallVelocity);
+
+	float flFallVel = player->m_Local.m_flFallVelocity;
+	if ( flFallVel > 16.0f && flFallVel <= PLAYER_FATAL_FALL_SPEED )
+	{
+		// punch view when we hit the ground
+		QAngle punchAngle = player->GetPunchAngle();
+		punchAngle.x = (flFallVel * 0.001);
+	
+		if ( punchAngle.x < 0.75 )
+			punchAngle.x = 0.75;
+
+		player->SetPunchAngle( punchAngle );
+	}
 	
 	//
 	// Clear the fall velocity so the impact doesn't happen again.
@@ -4610,7 +4622,7 @@ void CGameMovement::PlayerMove( void )
 	UpdateDuckJumpEyeOffset();
 	Duck();
 
-	// Don't run ladder code if dead on on a train
+	// Don't run ladder code if dead or on a train
 	if ( !player->pl.deadflag && !(player->GetFlags() & FL_ONTRAIN) )
 	{
 		// If was not on a ladder now, but was on one before, 

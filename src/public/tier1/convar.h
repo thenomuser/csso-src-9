@@ -469,6 +469,9 @@ public:
 	int GetInt( void ) const;
 	bool GetBool() const { return !!GetInt(); }
 	const char *GetString( void ) const;
+	// True if it has a min/max setting
+	bool GetMin( float& minVal ) const;
+	bool GetMax( float& maxVal ) const;
 
 	void SetValue( const char *pValue );
 	void SetValue( float flValue );
@@ -528,6 +531,16 @@ FORCEINLINE_CVAR const char *ConVarRef::GetString( void ) const
 {
 	Assert( !IsFlagSet( FCVAR_NEVER_AS_STRING ) );
 	return m_pConVarState->m_pszString;
+}
+
+FORCEINLINE_CVAR bool ConVarRef::GetMin( float& minVal ) const
+{
+	return m_pConVarState->GetMin( minVal );
+}
+
+FORCEINLINE_CVAR bool ConVarRef::GetMax( float& maxVal ) const
+{
+	return m_pConVarState->GetMax( maxVal );
 }
 
 

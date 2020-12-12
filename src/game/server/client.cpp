@@ -657,12 +657,12 @@ void CC_DrawLine( const CCommand &args )
 	Vector startPos;
 	Vector endPos;
 
-	startPos.x = atof(args[1]);
-	startPos.y = atof(args[2]);
-	startPos.z = atof(args[3]);
-	endPos.x = atof(args[4]);
-	endPos.y = atof(args[5]);
-	endPos.z = atof(args[6]);
+	startPos.x = clamp( atof(args[1]), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
+	startPos.y = clamp( atof(args[2]), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
+	startPos.z = clamp( atof(args[3]), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
+	endPos.x = clamp( atof(args[4]), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
+	endPos.y = clamp( atof(args[5]), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
+	endPos.z = clamp( atof(args[6]), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
 
 	UTIL_AddDebugLine(startPos,endPos,true,true);
 }
@@ -677,9 +677,9 @@ void CC_DrawCross( const CCommand &args )
 {
 	Vector vPosition;
 
-	vPosition.x = atof(args[1]);
-	vPosition.y = atof(args[2]);
-	vPosition.z = atof(args[3]);
+	vPosition.x = clamp( atof(args[1]), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
+	vPosition.y = clamp( atof(args[2]), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
+	vPosition.z = clamp( atof(args[3]), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
 
 	// Offset since min and max z in not about center
 	Vector mins = Vector(-5,-5,-5);
@@ -1207,16 +1207,8 @@ void CC_God_f (void)
 	if ( !pPlayer )
 		return;
 
-#ifdef TF_DLL
-   if ( TFGameRules() && ( TFGameRules()->IsPVEModeActive() == false ) )
-   {
-	   if ( gpGlobals->deathmatch )
-		   return;
-   }
-#else
-	if ( gpGlobals->deathmatch )
-		return;
-#endif
+// 	if ( gpGlobals->deathmatch )
+// 		return;
 
 	pPlayer->ToggleFlag( FL_GODMODE );
 	if (!(pPlayer->GetFlags() & FL_GODMODE ) )
@@ -1225,7 +1217,39 @@ void CC_God_f (void)
 		ClientPrint( pPlayer, HUD_PRINTCONSOLE, "godmode ON\n");
 }
 
+//------------------------------------------------------------------------------
+// Sets all players to godmode
+//------------------------------------------------------------------------------
+void CC_Gods_f( void )
+{
+	if ( !sv_cheats->GetBool() )
+		return;
+
+	// Decide how to toggle based on the state of the local player.
+	bool turnOn = false;
+	CBasePlayer *pLocalPlayer = ToBasePlayer( UTIL_GetCommandClient() );
+	if ( pLocalPlayer )
+	{
+		turnOn = !( pLocalPlayer->GetFlags() & FL_GODMODE );
+	}
+
+	for ( int i = 1; i <= gpGlobals->maxClients; ++i )
+	{
+		CBasePlayer *pPlayer = ToBasePlayer( UTIL_PlayerByIndex( i ) );
+		if ( !pPlayer )
+			continue;
+
+		if ( turnOn != ( ( pPlayer->GetFlags() & FL_GODMODE ) > 0 ) )
+		{
+			pPlayer->ToggleFlag( FL_GODMODE );
+		}
+	}
+
+	ClientPrint( pLocalPlayer, HUD_PRINTCONSOLE, turnOn ? "godsmode ON\n" : "godsmode OFF\n" );
+}
+
 static ConCommand god("god", CC_God_f, "Toggle. Player becomes invulnerable.", FCVAR_CHEAT );
+static ConCommand gods("gods", CC_Gods_f, "Toggle. All players become invulnerable.", FCVAR_CHEAT );
 
 
 //------------------------------------------------------------------------------
@@ -1249,9 +1273,9 @@ CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats).",
 	Vector oldorigin = pPlayer->GetAbsOrigin();
 
 	Vector newpos;
-	newpos.x = atof( args[1] );
-	newpos.y = atof( args[2] );
-	newpos.z = args.ArgC() == 4 ? atof( args[3] ) : oldorigin.z;
+	newpos.x = clamp( atof( args[1] ), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
+	newpos.y = clamp( atof( args[2] ), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
+	newpos.z = args.ArgC() == 4 ? clamp( atof( args[3] ), MIN_COORD_FLOAT, MAX_COORD_FLOAT ) : oldorigin.z;
 
 	pPlayer->SetAbsOrigin( newpos );
 

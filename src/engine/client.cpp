@@ -1670,7 +1670,6 @@ bool CheckSimpleMaterial( IMaterial *pMaterial )
 	if ( pMaterial->GetMaterialVarFlag( MATERIAL_VAR_SELFILLUM ) )
 		return false;
 
-	// PiMoN: can someone at valve please tell me why is it restricted?
 	//if ( pMaterial->GetMaterialVarFlag( MATERIAL_VAR_ADDITIVE ) )
 	//	return false;
 
@@ -1792,11 +1791,6 @@ void CClientState::FinishSignonState_New()
 		return;
 	}
 
-	// We're going to force-touch a lot of textures and resources below, we don't want the streaming system to try and
-	// pull these in as if they were being used for normal rendering.
-	// PiMoN: TODO: check if I need it
-	//materials->SuspendTextureStreaming();
-
 	// Only do this if our server is shut down and we're acting as a client. Otherwise the server handles this when it
 	// starts the load.
 	if ( sv.m_State < ss_loading )
@@ -1851,10 +1845,6 @@ void CClientState::FinishSignonState_New()
 
 	// Tell rendering system we have a new set of models.
 	R_LevelInit();
-
-	// Balanced against SuspendTextureStreaming above
-	// PiMoN: TODO: check if I need it
-	// materials->ResumeTextureStreaming();
 
 	EngineVGui()->UpdateProgressBar(PROGRESS_SENDCLIENTINFO);
 	if ( !m_NetChannel )

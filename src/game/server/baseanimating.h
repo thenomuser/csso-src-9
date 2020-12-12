@@ -63,6 +63,7 @@ public:
 
 	// Cycle access
 	void SetCycle( float flCycle );
+	void ForceCycle( float flCycle );
 	float GetCycle() const;
 
 	float	GetAnimTimeInterval( void ) const;
@@ -516,6 +517,13 @@ inline void CBaseAnimating::SetCycle( float flCycle )
 {
 	m_flCycle = flCycle;
 }
+
+inline void CBaseAnimating::ForceCycle( float flCycle )
+{
+	SetCycle( flCycle );
+	m_flLastEventCheck = flCycle;
+}
+
 
 
 EXTERN_SEND_TABLE(DT_BaseAnimating);

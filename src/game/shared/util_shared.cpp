@@ -177,11 +177,11 @@ Vector SharedRandomVector( const char *sharedname, float minVal, float maxVal, i
 	RandomSeed( seed );
 	// HACK:  Can't call RandomVector/Angle because it uses rand() not vstlib Random*() functions!
 	// Get a random vector.
-	Vector random;
-	random.x = RandomFloat( minVal, maxVal );
-	random.y = RandomFloat( minVal, maxVal );
-	random.z = RandomFloat( minVal, maxVal );
-	return random;
+	Vector vRandom;
+	vRandom.x = RandomFloat( minVal, maxVal );
+	vRandom.y = RandomFloat( minVal, maxVal );
+	vRandom.z = RandomFloat( minVal, maxVal );
+	return vRandom;
 }
 
 QAngle SharedRandomAngle( const char *sharedname, float minVal, float maxVal, int additionalSeed /*=0*/ )
@@ -193,11 +193,11 @@ QAngle SharedRandomAngle( const char *sharedname, float minVal, float maxVal, in
 
 	// HACK:  Can't call RandomVector/Angle because it uses rand() not vstlib Random*() functions!
 	// Get a random vector.
-	Vector random;
-	random.x = RandomFloat( minVal, maxVal );
-	random.y = RandomFloat( minVal, maxVal );
-	random.z = RandomFloat( minVal, maxVal );
-	return QAngle( random.x, random.y, random.z );
+	Vector vRandom;
+	vRandom.x = RandomFloat( minVal, maxVal );
+	vRandom.y = RandomFloat( minVal, maxVal );
+	vRandom.z = RandomFloat( minVal, maxVal );
+	return QAngle( vRandom.x, vRandom.y, vRandom.z );
 }
 
 
@@ -1174,4 +1174,15 @@ const char* UTIL_GetActiveHolidayString()
 #else
 	return NULL;
 #endif
+}
+
+bool UTIL_IsNewYear()
+{
+	time_t timet = time( NULL );
+	struct tm *tm = localtime( &timet );
+
+	if ( tm->tm_mon > 10 || tm->tm_mon < 1 )
+		return true;
+
+	return false;
 }

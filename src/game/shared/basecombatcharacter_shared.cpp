@@ -113,6 +113,28 @@ bool CBaseCombatCharacter::Weapon_CanSwitchTo( CBaseCombatWeapon *pWeapon )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Returns the weapon (if any) in the requested slot
+// Input  : slot - which slot to poll
+//-----------------------------------------------------------------------------
+CBaseCombatWeapon *CBaseCombatCharacter::Weapon_GetSlot( int slot ) const
+{
+	int	targetSlot = slot;
+
+	// Check for that slot being occupied already
+	for ( int i=0; i < MAX_WEAPONS; i++ )
+	{
+		if ( m_hMyWeapons[i].Get() != NULL )
+		{
+			// If the slots match, it's already occupied
+			if ( m_hMyWeapons[i]->GetSlot() == targetSlot )
+				return m_hMyWeapons[i];
+		}
+	}
+	
+	return NULL;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 // Output : CBaseCombatWeapon
 //-----------------------------------------------------------------------------
@@ -132,7 +154,11 @@ void CBaseCombatCharacter::RemoveAmmo( int iCount, int iAmmoIndex )
 		return;
 
 	// Infinite ammo?
-	if ( GetAmmoDef()->MaxCarry( iAmmoIndex ) == INFINITE_AMMO )
+	if ( GetAmmoDef()->CanCarryInfiniteAmmo( iAmmoIndex ) )
+		return;
+
+	extern ConVar sv_infinite_ammo;
+	if ( sv_infinite_ammo.GetInt() == 2 ) // infinite total ammo but magazine reloads are still required.
 		return;
 
 	// Ammo pickup sound
@@ -176,7 +202,7 @@ int CBaseCombatCharacter::GetAmmoCount( int iAmmoIndex ) const
 		return 0;
 
 	// Infinite ammo?
-	if ( GetAmmoDef()->MaxCarry( iAmmoIndex ) == INFINITE_AMMO )
+	if ( GetAmmoDef()->CanCarryInfiniteAmmo( iAmmoIndex ) )
 		return 999;
 
 	return m_iAmmo[ iAmmoIndex ];

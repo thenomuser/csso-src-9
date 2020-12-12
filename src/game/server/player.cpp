@@ -69,6 +69,9 @@
 #include "dt_utlvector_send.h"
 #include "vote_controller.h"
 #include "ai_speech.h"
+#ifdef CSTRIKE_DLL
+#include "weapon_c4.h"
+#endif
 
 #if defined USES_ECON_ITEMS
 #include "econ_wearable.h"
@@ -86,8 +89,9 @@ ConVar autoaim_max_dist( "autoaim_max_dist", "2160" ); // 2160 = 180 feet
 ConVar autoaim_max_deflect( "autoaim_max_deflect", "0.99" );
 
 #ifdef CSTRIKE_DLL
-ConVar	spec_freeze_time( "spec_freeze_time", "5.0", FCVAR_CHEAT | FCVAR_REPLICATED, "Time spend frozen in observer freeze cam." );
-ConVar	spec_freeze_traveltime( "spec_freeze_traveltime", "0.7", FCVAR_CHEAT | FCVAR_REPLICATED, "Time taken to zoom in to frame a target in observer freeze cam.", true, 0.01, false, 0 );
+ConVar	spec_freeze_time( "spec_freeze_time", "3.0", FCVAR_REPLICATED, "Time spend frozen in observer freeze cam." );
+ConVar	spec_freeze_time_lock( "spec_freeze_time_lock", "1.0", FCVAR_REPLICATED, "Time players are prevented from skipping the freeze cam" );
+ConVar	spec_freeze_traveltime( "spec_freeze_traveltime", "0.3", FCVAR_REPLICATED, "Time taken to zoom in to frame a target in observer freeze cam.", true, 0.01, false, 0 );
 #else
 ConVar	spec_freeze_time( "spec_freeze_time", "4.0", FCVAR_CHEAT | FCVAR_REPLICATED, "Time spend frozen in observer freeze cam." );
 ConVar	spec_freeze_traveltime( "spec_freeze_traveltime", "0.4", FCVAR_CHEAT | FCVAR_REPLICATED, "Time taken to zoom in to frame a target in observer freeze cam.", true, 0.01, false, 0 );
@@ -183,7 +187,7 @@ ConVar	sk_player_stomach( "sk_player_stomach","1" );
 ConVar	sk_player_arm( "sk_player_arm","1" );
 ConVar	sk_player_leg( "sk_player_leg","1" );
 
-//ConVar	player_usercommand_timeout( "player_usercommand_timeout", "10", 0, "After this many seconds without a usercommand from a player, the client is kicked." );
+ConVar	sv_player_usercommand_timeout( "sv_player_usercommand_timeout", "3", FCVAR_CHEAT, "After this many seconds without a usercommand from a player, the server will RunNullCommand as if client sends an empty command." );
 #ifdef _DEBUG
 ConVar  sv_player_net_suppress_usercommands( "sv_player_net_suppress_usercommands", "0", FCVAR_CHEAT, "For testing usercommand hacking sideeffects. DO NOT SHIP" );
 #endif // _DEBUG
@@ -194,26 +198,26 @@ ConVar  player_debug_print_damage( "player_debug_print_damage", "0", FCVAR_CHEAT
 
 void CC_GiveCurrentAmmo( void )
 {
-	CBasePlayer *pPlayer = UTIL_PlayerByIndex(1);
+	CBasePlayer *pPlayer = UTIL_PlayerByIndex( 1 );
 
-	if( pPlayer )
+	if ( pPlayer )
 	{
 		CBaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
 
-		if( pWeapon )
+		if ( pWeapon )
 		{
-			if( pWeapon->UsesPrimaryAmmo() )
+			if ( pWeapon->UsesPrimaryAmmo() )
 			{
 				int ammoIndex = pWeapon->GetPrimaryAmmoType();
 
-				if( ammoIndex != -1 )
+				if ( ammoIndex != -1 )
 				{
 					int giveAmount;
-					giveAmount = GetAmmoDef()->MaxCarry(ammoIndex);
-					pPlayer->GiveAmmo( giveAmount, GetAmmoDef()->GetAmmoOfIndex(ammoIndex)->pName );
+					giveAmount = GetAmmoDef()->MaxCarry( ammoIndex, pPlayer );
+					pPlayer->GiveAmmo( giveAmount, GetAmmoDef()->GetAmmoOfIndex( ammoIndex )->pName );
 				}
 			}
-			if( pWeapon->UsesSecondaryAmmo() && pWeapon->HasSecondaryAmmo() )
+			if ( pWeapon->UsesSecondaryAmmo() && pWeapon->HasSecondaryAmmo() )
 			{
 				// Give secondary ammo out, as long as the player already has some
 				// from a presumeably natural source. This prevents players on XBox
@@ -221,11 +225,11 @@ void CC_GiveCurrentAmmo( void )
 				// were not tested with these items.
 				int ammoIndex = pWeapon->GetSecondaryAmmoType();
 
-				if( ammoIndex != -1 )
+				if ( ammoIndex != -1 )
 				{
 					int giveAmount;
-					giveAmount = GetAmmoDef()->MaxCarry(ammoIndex);
-					pPlayer->GiveAmmo( giveAmount, GetAmmoDef()->GetAmmoOfIndex(ammoIndex)->pName );
+					giveAmount = GetAmmoDef()->MaxCarry( ammoIndex, pPlayer );
+					pPlayer->GiveAmmo( giveAmount, GetAmmoDef()->GetAmmoOfIndex( ammoIndex )->pName );
 				}
 			}
 		}
@@ -2308,6 +2312,16 @@ bool CBasePlayer::SetObserverMode(int mode )
 		}
 	}
 
+#ifdef CSTRIKE_DLL
+	// Overridden here instead of in derived class to avoid duplicating the rest of this function:
+	// if we're observing the planted bomb, force the camera to be in chase view
+	CPlantedC4* pPlantedC4 = dynamic_cast< CPlantedC4* >( m_hObserverTarget.Get() );
+	if ( pPlantedC4 )
+	{
+		mode = OBS_MODE_CHASE;
+	}
+#endif
+
 	if ( m_iObserverMode > OBS_MODE_DEATHCAM )
 	{
 		// remember mode if we were really spectating before
@@ -3380,27 +3394,18 @@ void CBasePlayer::PhysicsSimulate( void )
 			pi->m_nNumCmds = commandsToRun;
 		}
 	}
+	else if ( GetTimeSinceLastUserCommand() > sv_player_usercommand_timeout.GetFloat() )
+	{
+		// no usercommand from player after some threshold
+		// server should start RunNullCommand as if client sends an empty command so that Think and gamestate related things run properly
+		RunNullCommand();
+	}
 
 	// Restore the true server clock
 	// FIXME:  Should this occur after simulation of children so
 	//  that they are in the timespace of the player?
 	gpGlobals->curtime		= savetime;
-	gpGlobals->frametime	= saveframetime;	
-
-// 	// Kick the player if they haven't sent a user command in awhile in order to prevent clients
-// 	// from using packet-level manipulation to mess with gamestate.  Not sending usercommands seems
-// 	// to have all kinds of bad effects, such as stalling a bunch of Think()'s and gamestate handling.
-// 	// An example from TF: A medic stops sending commands after deploying an uber on another player.
-// 	// As a result, invuln is permanently on the heal target because the maintenance code is stalled.
-// 	if ( GetTimeSinceLastUserCommand() > player_usercommand_timeout.GetFloat() )
-// 	{
-// 		// If they have an active netchan, they're almost certainly messing with usercommands?
-// 		INetChannelInfo *pNetChanInfo = engine->GetPlayerNetInfo( entindex() );
-// 		if ( pNetChanInfo && pNetChanInfo->GetTimeSinceLastReceived() < 5.f )
-// 		{
-// 			engine->ServerCommand( UTIL_VarArgs( "kickid %d %s\n", GetUserID(), "UserCommand Timeout" ) );
-// 		}
-// 	}
+	gpGlobals->frametime	= saveframetime;
 }
 
 unsigned int CBasePlayer::PhysicsSolidMaskForEntity() const
@@ -4897,6 +4902,14 @@ void CBasePlayer::InitialSpawn( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Called directly after we select a spawn point and teleport to it
+//-----------------------------------------------------------------------------
+void CBasePlayer::PostSpawnPointSelection()
+{
+	// [dkorus] do nothing in base version
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Called everytime the player respawns
 //-----------------------------------------------------------------------------
 void CBasePlayer::Spawn( void )
@@ -4969,6 +4982,10 @@ void CBasePlayer::Spawn( void )
 		g_pGameRules->SetDefaultPlayerTeam( this );
 
 	g_pGameRules->GetPlayerSpawnSpot( this );
+
+	// dkorus: Allow functions to run post-spawn
+	//		   for cstrike characters, this sets the position/rotation on controlled bots
+	PostSpawnPointSelection();
 
 	m_Local.m_bDucked = false;// This will persist over round restart if you hold duck otherwise. 
 	m_Local.m_bDucking = false;
@@ -6448,7 +6465,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		{
 			// set new spectator mode, don't allow OBS_MODE_NONE
 			if ( !SetObserverMode( mode ) )
-				ClientPrint( this, HUD_PRINTCONSOLE, "#Spectator_Mode_Unkown");
+				ClientPrint( this, HUD_PRINTCONSOLE, "#Spectator_Mode_Unknown");
 			else
 				engine->ClientCommand( edict(), "cl_spec_mode %d", mode );
 		}
@@ -6531,9 +6548,9 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 			 args.ArgC() == 6 )
 		{
 			Vector origin;
-			origin.x = atof( args[1] );
-			origin.y = atof( args[2] );
-			origin.z = atof( args[3] );
+			origin.x = clamp( atof( args[1] ), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
+			origin.y = clamp( atof( args[2] ), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
+			origin.z = clamp( atof( args[3] ), MIN_COORD_FLOAT, MAX_COORD_FLOAT );
 
 			QAngle angle;
 			angle.x = atof( args[4] );
@@ -7311,9 +7328,7 @@ void CBasePlayer::Weapon_Drop( CBaseCombatWeapon *pWeapon, const Vector *pvecTar
 		{
 			CBaseViewModel *vm = GetViewModel();
 			if ( vm )
-			{
 				vm->AddEffects( EF_NODRAW );
-			}
 		}
 	}
 }

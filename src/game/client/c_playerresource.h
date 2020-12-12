@@ -29,7 +29,7 @@ public:
 					C_PlayerResource();
 	virtual			~C_PlayerResource();
 
-public : // IGameResources intreface
+public : // IGameResources interface
 
 	// Team data access 
 	virtual int		GetTeamScore( int index );
@@ -49,6 +49,7 @@ public : // IGameResources intreface
 //	virtual int		GetPacketloss( int index );
 	virtual int		GetPlayerScore( int index );
 	virtual int		GetDeaths( int index );
+	virtual int		GetAssists( int index );
 	virtual int		GetTeam( int index );
 	virtual int		GetFrags( int index );
 	virtual int		GetHealth( int index );
@@ -57,7 +58,7 @@ public : // IGameResources intreface
 	virtual	void	OnDataChanged(DataUpdateType_t updateType);
 
 protected:
-	void	UpdatePlayerName( int slot );
+	virtual void	UpdatePlayerName( int slot );
 
 	// Data for each player that's propagated to all clients
 	// Stored in individual arrays so they can be sent down via datatables
@@ -65,6 +66,7 @@ protected:
 	int		m_iPing[MAX_PLAYERS+1];
 	int		m_iScore[MAX_PLAYERS+1];
 	int		m_iDeaths[MAX_PLAYERS+1];
+	int		m_iAssists[MAX_PLAYERS+1];
 	bool	m_bConnected[MAX_PLAYERS+1];
 	int		m_iTeam[MAX_PLAYERS+1];
 	bool	m_bAlive[MAX_PLAYERS+1];

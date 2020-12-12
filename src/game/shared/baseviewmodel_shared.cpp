@@ -27,11 +27,20 @@ extern ConVar in_forceuser;
 #include "iclientmode.h"
 #endif
 
+#include "weapon_basecsgrenade.h"
+#include "cs_shareddefs.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 #define VIEWMODEL_ANIMATION_PARITY_BITS 3
 #define SCREEN_OVERLAY_MATERIAL "vgui/screens/vgui_overlay"
+
+#if defined( CLIENT_DLL )
+ConVar viewmodel_offset_x( "viewmodel_offset_x", "0.0", FCVAR_ARCHIVE );	 // the viewmodel offset from default in X
+ConVar viewmodel_offset_y( "viewmodel_offset_y", "0.0", FCVAR_ARCHIVE );	 // the viewmodel offset from default in Y
+ConVar viewmodel_offset_z( "viewmodel_offset_z", "0.0", FCVAR_ARCHIVE );	 // the viewmodel offset from default in Z
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -42,6 +51,11 @@ CBaseViewModel::CBaseViewModel()
 	// NOTE: We do this here because the color is never transmitted for the view model.
 	m_nOldAnimationParity = 0;
 	m_EntClientFlags |= ENTCLIENTFLAG_ALWAYS_INTERPOLATE;
+
+	m_flCamDriverAppliedTime = 0;
+	m_flCamDriverWeight = 0;
+	m_vecCamDriverLastPos.Init();
+	m_angCamDriverLastAng.Init();
 #endif
 	SetRenderColor( 255, 255, 255, 255 );
 
@@ -52,7 +66,9 @@ CBaseViewModel::CBaseViewModel()
 
 	m_nViewModelIndex	= 0;
 
-	m_nAnimationParity	= 0;
+	m_nAnimationParity = 0;
+
+	m_bShouldIgnoreOffsetAndAccuracy = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -74,6 +90,7 @@ void CBaseViewModel::UpdateOnRemove( void )
 //-----------------------------------------------------------------------------
 void CBaseViewModel::Precache( void )
 {
+	PrecacheParticleSystem( MOLOTOV_PARTICLE_EFFECT_NAME );
 }
 
 //-----------------------------------------------------------------------------
@@ -382,21 +399,78 @@ void CBaseViewModel::SendViewModelMatchingSequence( int sequence )
 #include "ivieweffects.h"
 #endif
 
+#ifdef CLIENT_DLL
+void CBaseViewModel::PostBuildTransformations( CStudioHdr *pStudioHdr, Vector *pos, Quaternion q[] )
+{
+	int nCamDriverBone = LookupBone( "cam_driver" );
+	if ( nCamDriverBone != -1 )
+	{
+		m_flCamDriverAppliedTime = gpGlobals->curtime;		
+		VectorCopy( pos[nCamDriverBone], m_vecCamDriverLastPos );
+		QuaternionAngles( q[nCamDriverBone], m_angCamDriverLastAng );
+
+		if ( ShouldFlipViewModel() )
+		{
+			m_angCamDriverLastAng[YAW] = -m_angCamDriverLastAng[YAW];
+			m_vecCamDriverLastPos.y = -m_vecCamDriverLastPos.y;
+		}
+
+}
+}
+#endif
+
 void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePosition, const QAngle& eyeAngles )
 {
+
+#ifdef CLIENT_DLL
+	if ( owner )
+	{
+		CBaseCSGrenade* pGrenade = dynamic_cast<CBaseCSGrenade*>( owner->GetActiveWeapon() );
+		if ( pGrenade )
+		{
+			int iPoseParam = LookupPoseParameter( "throwcharge" );
+			if ( iPoseParam != -1 )
+				SetPoseParameter( iPoseParam, clamp(pGrenade->ApproachThrownStrength(), 0.0f, 1.0f) );
+		}
+	}
+#endif
+
 	// UNDONE: Calc this on the server?  Disabled for now as it seems unnecessary to have this info on the server
 #if defined( CLIENT_DLL )
 	QAngle vmangoriginal = eyeAngles;
 	QAngle vmangles = eyeAngles;
 	Vector vmorigin = eyePosition;
 
+	Vector vecRight;
+	Vector vecUp;
+	Vector vecForward;
+	AngleVectors( vmangoriginal, &vecForward, &vecRight, &vecUp );
+
+	if ( !m_bShouldIgnoreOffsetAndAccuracy )
+	{
+#if IRONSIGHT
+		CWeaponCSBase *pIronSightWeapon = (CWeaponCSBase*)owner->GetActiveWeapon();
+		if ( pIronSightWeapon )
+		{
+			CIronSightController* pIronSightController = pIronSightWeapon->GetIronSightController();
+			if ( pIronSightController && pIronSightController->IsInIronSight() )
+			{
+				float flInvIronSightAmount = ( 1.0f - pIronSightController->GetIronSightAmount() );
+
+				vecForward *= flInvIronSightAmount;
+				vecUp *= flInvIronSightAmount;
+				vecRight *=	flInvIronSightAmount;
+			}
+		}
+#endif
+		vmorigin += ( viewmodel_offset_y.GetFloat() * vecForward ) + ( viewmodel_offset_z.GetFloat() * vecUp ) + ( viewmodel_offset_x.GetFloat() * vecRight );
+	}
+
 	CBaseCombatWeapon *pWeapon = m_hWeapon.Get();
 	//Allow weapon lagging
 	if ( pWeapon != NULL )
 	{
-#if defined( CLIENT_DLL )
 		if ( !prediction->InPrediction() )
-#endif
 		{
 			// add weapon-specific bob 
 			pWeapon->AddViewmodelBob( this, vmorigin, vmangles );
@@ -558,7 +632,7 @@ IMPLEMENT_NETWORKCLASS_ALIASED( BaseViewModel, DT_BaseViewModel )
 BEGIN_NETWORK_TABLE_NOBASE(CBaseViewModel, DT_BaseViewModel)
 #if !defined( CLIENT_DLL )
 	SendPropModelIndex(SENDINFO(m_nModelIndex)),
-	SendPropInt		(SENDINFO(m_nBody), 8),
+	SendPropInt		(SENDINFO(m_nBody), ANIMATION_BODY_BITS),
 	SendPropInt		(SENDINFO(m_nSkin), 10),
 	SendPropInt		(SENDINFO(m_nSequence),	8, SPROP_UNSIGNED),
 	SendPropInt		(SENDINFO(m_nViewModelIndex), VIEWMODEL_INDEX_BITS, SPROP_UNSIGNED),
@@ -571,6 +645,8 @@ BEGIN_NETWORK_TABLE_NOBASE(CBaseViewModel, DT_BaseViewModel)
 	SendPropInt( SENDINFO( m_nNewSequenceParity ), EF_PARITY_BITS, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO( m_nResetEventsParity ), EF_PARITY_BITS, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO( m_nMuzzleFlashParity ), EF_MUZZLEFLASH_BITS, SPROP_UNSIGNED ),
+
+	SendPropBool( SENDINFO( m_bShouldIgnoreOffsetAndAccuracy ) ),
 
 #if !defined( INVASION_DLL ) && !defined( INVASION_CLIENT_DLL )
 	SendPropArray	(SendPropFloat(SENDINFO_ARRAY(m_flPoseParameter),	8, 0, 0.0f, 1.0f), m_flPoseParameter),
@@ -589,7 +665,9 @@ BEGIN_NETWORK_TABLE_NOBASE(CBaseViewModel, DT_BaseViewModel)
 
 	RecvPropInt( RECVINFO( m_nNewSequenceParity )),
 	RecvPropInt( RECVINFO( m_nResetEventsParity )),
-	RecvPropInt( RECVINFO( m_nMuzzleFlashParity )),
+	RecvPropInt( RECVINFO( m_nMuzzleFlashParity ) ),
+
+	RecvPropBool( RECVINFO( m_bShouldIgnoreOffsetAndAccuracy ) ),
 
 #if !defined( INVASION_DLL ) && !defined( INVASION_CLIENT_DLL )
 	RecvPropArray(RecvPropFloat(RECVINFO(m_flPoseParameter[0]) ), m_flPoseParameter ),
@@ -689,3 +767,14 @@ bool CBaseViewModel::GetAttachmentVelocity( int number, Vector &originVel, Quate
 }
 
 #endif
+
+LINK_ENTITY_TO_CLASS( hands_viewmodel, CHandsViewModel );
+IMPLEMENT_NETWORKCLASS_ALIASED( HandsViewModel, DT_HandsViewModel );
+
+BEGIN_NETWORK_TABLE( CHandsViewModel, DT_HandsViewModel )
+#ifndef CLIENT_DLL
+	SendPropEHandle( SENDINFO_NAME( m_hMoveParent, moveparent ) ),
+#else
+	RecvPropInt( RECVINFO_NAME( m_hNetworkMoveParent, moveparent ), 0, RecvProxy_IntToMoveParent ),
+#endif
+END_NETWORK_TABLE()

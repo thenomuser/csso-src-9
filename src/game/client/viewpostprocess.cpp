@@ -18,6 +18,8 @@
 #include "bitmap/tgawriter.h"
 #include "filesystem.h"
 #include "tier0/vprof.h"
+#include "viewpostprocess.h"
+#include "c_cs_player.h"
 
 #include "proxyentity.h"
 
@@ -38,7 +40,7 @@ bool g_bFlashlightIsOn = false;
 
 // hdr parameters
 ConVar mat_bloomscale( "mat_bloomscale", "1" );
-ConVar mat_hdr_level( "mat_hdr_level", "2", FCVAR_ARCHIVE );
+ConVar mat_hdr_level( "mat_hdr_level", "2", FCVAR_DEVELOPMENTONLY );
 
 ConVar mat_bloomamount_rate( "mat_bloomamount_rate", "0.05f", FCVAR_CHEAT );
 static ConVar debug_postproc( "mat_debug_postprocessing_effects", "0", FCVAR_NONE, "0 = off, 1 = show post-processing passes in quadrants of the screen, 2 = only apply post-processing to the centre of the screen" );
@@ -289,7 +291,7 @@ void ApplyPostProcessingPasses(PostProcessingPass *pass_list, // table of effect
 					pRenderContext->SetRenderTarget(NULL);
 					int row=pcount/4;
 					int col=pcount %4;
-					int dest_width,dest_height;
+					//int dest_width,dest_height;
 					pRenderContext->GetRenderTargetDimensions( dest_width, dest_height );
 					pRenderContext->Viewport( 0, 0, dest_width, dest_height );
 					DrawClippedScreenSpaceRectangle(src_mat,10+col*220,10+row*220,
@@ -595,7 +597,7 @@ void CLuminanceHistogramSystem::Update( void )
 	// now, issue queries for the oldest finished queries we have
 	while( n_queries_issued_this_frame < MAX_QUERIES_PER_FRAME )
 	{
-		int nNumRanges = N_LUMINANCE_RANGES;
+		nNumRanges = N_LUMINANCE_RANGES;
 		if ( mat_tonemap_algorithm.GetInt() == 1 )
 			nNumRanges = N_LUMINANCE_RANGES_NEW;
 
@@ -1679,6 +1681,33 @@ static void CenterScaleQuadUVs( Vector4D & quadUVs, const Vector2D & uvScale )
 	quadUVs.w		= uvMid.y + uvScale.y*uvRange.y;
 }
 
+#if IRONSIGHT
+bool ApplyIronSightScopeEffect( int x, int y, int w, int h, CViewSetup *pViewSetup, bool bPreparationStage )
+{
+	//the preparation stage returns true if following steps like rendering the scope stencil shape are necessary.
+	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+	if (pPlayer)
+	{
+		C_WeaponCSBase *pWeapon = (C_WeaponCSBase *)pPlayer->GetActiveWeapon();
+		if (pWeapon)
+		{
+			if ( pWeapon->GetIronSightController() )
+			{
+				if ( bPreparationStage )
+				{
+					return pWeapon->GetIronSightController()->PrepareScopeEffect( x, y, w, h, pViewSetup );
+				}
+				else
+				{
+					pWeapon->GetIronSightController()->RenderScopeEffect( x, y, w, h, pViewSetup );
+				}
+			}
+		}
+	}
+	return false;
+}
+#endif
+
 
 typedef struct SPyroSide
 {
@@ -2385,9 +2414,9 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 					partialViewportPostDestRect.height	-= 0.50f*fullViewportPostDestRect.height;
 
 					// This math interprets texel coords as being at corner pixel centers (*not* at corner vertices):
-					Vector2D uvScale(	1.0f - ( (w / 2) / (float)(w - 1) ),
+					Vector2D uvScalePost(	1.0f - ( (w / 2) / (float)(w - 1) ),
 										1.0f - ( (h / 2) / (float)(h - 1) ) );
-					CenterScaleQuadUVs( partialViewportPostSrcCorners, uvScale );
+					CenterScaleQuadUVs( partialViewportPostSrcCorners, uvScalePost );
 				}
 
 				// Temporary hack... Color correction was crashing on the first frame 
@@ -2699,7 +2728,7 @@ ConVar mat_motion_blur_falling_intensity( "mat_motion_blur_falling_intensity", "
 ConVar mat_motion_blur_rotation_intensity( "mat_motion_blur_rotation_intensity", "1.0" );
 ConVar mat_motion_blur_strength( "mat_motion_blur_strength", "1.0" );
 
-void DoImageSpaceMotionBlur( const CViewSetup &view, int x, int y, int w, int h )
+void DoImageSpaceMotionBlur( const CViewSetup &viewBlur, int x, int y, int w, int h )
 {
 #ifdef CSS_PERF_TEST
 	return;
@@ -2742,7 +2771,7 @@ void DoImageSpaceMotionBlur( const CViewSetup &view, int x, int y, int w, int h 
 		//===================================//
 		// Get current pitch & wrap to +-180 //
 		//===================================//
-		float flCurrentPitch = view.angles[PITCH];
+		float flCurrentPitch = viewBlur.angles[PITCH];
 		while ( flCurrentPitch > 180.0f )
 			flCurrentPitch -= 360.0f;
 		while ( flCurrentPitch < -180.0f )
@@ -2751,7 +2780,7 @@ void DoImageSpaceMotionBlur( const CViewSetup &view, int x, int y, int w, int h 
 		//=================================//
 		// Get current yaw & wrap to +-180 //
 		//=================================//
-		float flCurrentYaw = view.angles[YAW];
+		float flCurrentYaw = viewBlur.angles[YAW];
 		while ( flCurrentYaw > 180.0f )
 			flCurrentYaw -= 360.0f;
 		while ( flCurrentYaw < -180.0f )
@@ -2764,7 +2793,7 @@ void DoImageSpaceMotionBlur( const CViewSetup &view, int x, int y, int w, int h 
 		// Get current basis vectors //
 		//===========================//
 		matrix3x4_t mCurrentBasisVectors;
-		AngleMatrix( view.angles, mCurrentBasisVectors );
+		AngleMatrix( viewBlur.angles, mCurrentBasisVectors );
 
 		float vCurrentSideVec[3] = { mCurrentBasisVectors[0][1], mCurrentBasisVectors[1][1], mCurrentBasisVectors[2][1] };
 		float vCurrentForwardVec[3] = { mCurrentBasisVectors[0][0], mCurrentBasisVectors[1][0], mCurrentBasisVectors[2][0] };
@@ -2773,7 +2802,7 @@ void DoImageSpaceMotionBlur( const CViewSetup &view, int x, int y, int w, int h 
 		//======================//
 		// Get current position //
 		//======================//
-		float vCurrentPosition[3] = { view.origin.x, view.origin.y, view.origin.z };
+		float vCurrentPosition[3] = { viewBlur.origin.x, viewBlur.origin.y, viewBlur.origin.z };
 
 		//===============================================================//
 		// Evaluate change in position to determine if we need to update //
@@ -2819,8 +2848,8 @@ void DoImageSpaceMotionBlur( const CViewSetup &view, int x, int y, int w, int h 
 			// Normal update path //
 			//====================//
 			// Compute horizontal and vertical fov
-			float flHorizontalFov = view.fov;
-			float flVerticalFov = ( view.m_flAspectRatio <= 0.0f ) ? ( view.fov ) : ( view.fov  / view.m_flAspectRatio );
+			float flHorizontalFov = viewBlur.fov;
+			float flVerticalFov = (viewBlur.m_flAspectRatio <= 0.0f) ? (viewBlur.fov) : (viewBlur.fov  / viewBlur.m_flAspectRatio);
 			//engine->Con_NPrintf( 2, "Horizontal Fov: %6.2f   Vertical Fov: %6.2f", flHorizontalFov, flVerticalFov );
 
 			//=====================//

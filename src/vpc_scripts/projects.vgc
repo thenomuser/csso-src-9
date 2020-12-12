@@ -61,6 +61,11 @@ $Project "server"
 	"game\server\server_csso.vpc"		[($WIN32||$POSIX) && $CSSO]
 }
 
+$Project "hlmv"
+{
+	"utils\hlmv\hlmv.vpc" [$WIN32]
+}
+
 $Project "mathlib"
 {
 	"mathlib\mathlib.vpc" [$WINDOWS||$X360||$POSIX]
@@ -104,6 +109,11 @@ $Project "tier1"
 $Project "particles"
 {
 	"particles\particles.vpc"
+}
+
+$Project "studiomdl"
+{
+	"utils\studiomdl\studiomdl.vpc" [$WIN32]
 }
 
 $Project "vbsp"

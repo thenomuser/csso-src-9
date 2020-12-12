@@ -22,6 +22,7 @@ IMPLEMENT_CLIENTCLASS_DT_NOBASE(C_PlayerResource, DT_PlayerResource, CPlayerReso
 	RecvPropArray3( RECVINFO_ARRAY(m_iPing), RecvPropInt( RECVINFO(m_iPing[0]))),
 	RecvPropArray3( RECVINFO_ARRAY(m_iScore), RecvPropInt( RECVINFO(m_iScore[0]))),
 	RecvPropArray3( RECVINFO_ARRAY(m_iDeaths), RecvPropInt( RECVINFO(m_iDeaths[0]))),
+	RecvPropArray3( RECVINFO_ARRAY(m_iAssists), RecvPropInt( RECVINFO(m_iAssists[0]))),
 	RecvPropArray3( RECVINFO_ARRAY(m_bConnected), RecvPropInt( RECVINFO(m_bConnected[0]))),
 	RecvPropArray3( RECVINFO_ARRAY(m_iTeam), RecvPropInt( RECVINFO(m_iTeam[0]))),
 	RecvPropArray3( RECVINFO_ARRAY(m_bAlive), RecvPropInt( RECVINFO(m_bAlive[0]))),
@@ -34,6 +35,7 @@ BEGIN_PREDICTION_DATA( C_PlayerResource )
 	DEFINE_PRED_ARRAY( m_iPing, FIELD_INTEGER, MAX_PLAYERS+1, FTYPEDESC_PRIVATE ),
 	DEFINE_PRED_ARRAY( m_iScore, FIELD_INTEGER, MAX_PLAYERS+1, FTYPEDESC_PRIVATE ),
 	DEFINE_PRED_ARRAY( m_iDeaths, FIELD_INTEGER, MAX_PLAYERS+1, FTYPEDESC_PRIVATE ),
+	DEFINE_PRED_ARRAY( m_iAssists, FIELD_INTEGER, MAX_PLAYERS+1, FTYPEDESC_PRIVATE ),
 	DEFINE_PRED_ARRAY( m_bConnected, FIELD_BOOLEAN, MAX_PLAYERS+1, FTYPEDESC_PRIVATE ),
 	DEFINE_PRED_ARRAY( m_iTeam, FIELD_INTEGER, MAX_PLAYERS+1, FTYPEDESC_PRIVATE ),
 	DEFINE_PRED_ARRAY( m_bAlive, FIELD_BOOLEAN, MAX_PLAYERS+1, FTYPEDESC_PRIVATE ),
@@ -54,6 +56,7 @@ C_PlayerResource::C_PlayerResource()
 //	memset( m_iPacketloss, 0, sizeof( m_iPacketloss ) );
 	memset( m_iScore, 0, sizeof( m_iScore ) );
 	memset( m_iDeaths, 0, sizeof( m_iDeaths ) );
+	memset( m_iAssists, 0, sizeof( m_iAssists ) );
 	memset( m_bConnected, 0, sizeof( m_bConnected ) );
 	memset( m_iTeam, 0, sizeof( m_iTeam ) );
 	memset( m_bAlive, 0, sizeof( m_bAlive ) );
@@ -98,8 +101,11 @@ void C_PlayerResource::UpdatePlayerName( int slot )
 		Error( "UpdatePlayerName with bogus slot %d\n", slot );
 		return;
 	}
-	if (!m_szUnconnectedName )
+
+	if ( !m_szUnconnectedName )
+	{
 		m_szUnconnectedName = AllocPooledString( PLAYER_UNCONNECTED_NAME );
+	}
 	
 	player_info_t sPlayerInfo;
 	if ( IsConnected( slot ) && engine->GetPlayerInfo( slot, &sPlayerInfo ) )
@@ -116,7 +122,7 @@ void C_PlayerResource::ClientThink()
 {
 	BaseClass::ClientThink();
 
-	for ( int i = 1; i <= gpGlobals->maxClients; ++i )
+	for ( int i = 1; i <= MAX_PLAYERS; ++i )
 	{
 		UpdatePlayerName( i );
 	}
@@ -167,9 +173,9 @@ int C_PlayerResource::GetTeam(int iIndex )
 	}
 }
 
-const char * C_PlayerResource::GetTeamName(int index)
+const char * C_PlayerResource::GetTeamName(int index_)
 {
-	C_Team *team = GetGlobalTeam( index );
+	C_Team *team = GetGlobalTeam( index_ );
 
 	if ( !team )
 		return "Unknown";
@@ -177,9 +183,9 @@ const char * C_PlayerResource::GetTeamName(int index)
 	return team->Get_Name();
 }
 
-int C_PlayerResource::GetTeamScore(int index)
+int C_PlayerResource::GetTeamScore(int index_)
 {
-	C_Team *team = GetGlobalTeam( index );
+	C_Team *team = GetGlobalTeam( index_ );
 
 	if ( !team )
 		return 0;
@@ -187,30 +193,30 @@ int C_PlayerResource::GetTeamScore(int index)
 	return team->Get_Score();
 }
 
-int C_PlayerResource::GetFrags(int index )
+int C_PlayerResource::GetFrags(int index_)
 {
 	return 666;
 }
 
-bool C_PlayerResource::IsLocalPlayer(int index)
+bool C_PlayerResource::IsLocalPlayer(int index_)
 {
 	C_BasePlayer *pPlayer =	C_BasePlayer::GetLocalPlayer();
 
 	if ( !pPlayer )
 		return false;
 
-	return ( index == pPlayer->entindex() );
+	return ( index_ == pPlayer->entindex() );
 }
 
 
-bool C_PlayerResource::IsHLTV(int index)
+bool C_PlayerResource::IsHLTV(int index_)
 {
-	if ( !IsConnected( index ) )
+	if ( !IsConnected( index_ ) )
 		return false;
 
 	player_info_t sPlayerInfo;
 	
-	if ( engine->GetPlayerInfo( index, &sPlayerInfo ) )
+	if ( engine->GetPlayerInfo( index_, &sPlayerInfo ) )
 	{
 		return sPlayerInfo.ishltv;
 	}
@@ -218,15 +224,15 @@ bool C_PlayerResource::IsHLTV(int index)
 	return false;
 }
 
-bool C_PlayerResource::IsReplay(int index)
+bool C_PlayerResource::IsReplay(int index_)
 {
 #if defined( REPLAY_ENABLED )
-	if ( !IsConnected( index ) )
+	if ( !IsConnected( index_ ) )
 		return false;
 
 	player_info_t sPlayerInfo;
 
-	if ( engine->GetPlayerInfo( index, &sPlayerInfo ) )
+	if ( engine->GetPlayerInfo( index_, &sPlayerInfo ) )
 	{
 		return sPlayerInfo.isreplay;
 	}
@@ -295,6 +301,17 @@ int	C_PlayerResource::GetDeaths( int iIndex )
 		return 0;
 
 	return m_iDeaths[iIndex];
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int	C_PlayerResource::GetAssists( int iIndex )
+{
+	if ( !IsConnected( iIndex ) )
+		return 0;
+
+	return m_iAssists[iIndex];
 }
 
 //-----------------------------------------------------------------------------

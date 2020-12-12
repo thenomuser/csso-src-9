@@ -40,6 +40,8 @@
 #if defined( _X360 )
 #include "xbox/xbox_console.h"
 #endif
+#include "cs_shareddefs.h"
+#include "weapon_csbase.h"
 
 #if defined( REPLAY_ENABLED )
 #include "replay/replaycamera.h"

@@ -80,6 +80,7 @@ char	*VarArgs( PRINTF_FORMAT_STRING const char *format, ... );
 int		GetSpectatorTarget();
 int		GetSpectatorMode( void );
 bool	IsPlayerIndex( int index );
+void	UpdateLocalPlayerVisionFlags();
 int		GetLocalPlayerIndex( void );
 int		GetLocalPlayerVisionFilterFlags( bool bWeaponsCheck = false );
 bool	IsLocalPlayerUsingVisionFilterFlags( int nFlags, bool bWeaponsCheck = false );
@@ -177,5 +178,9 @@ int UTIL_GetMapKeyCount( const char *pszCustomKey );
 
 // Returns true if the user has loaded any maps, false otherwise.
 bool UTIL_HasLoadedAnyMap();
+
+class CGameTrace;
+typedef CGameTrace trace_t;
+void		UTIL_ClearTrace( trace_t &trace );
 
 #endif // !UTIL_H

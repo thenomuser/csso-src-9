@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+﻿//========= Copyright � 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -18,6 +18,14 @@
 
 using namespace vgui;
 
+extern bool IsTakingAFreezecamScreenshot( void );
+
+extern ConVar cl_drawhud;
+//extern ConVar sfcrosshair;
+extern ConVar crosshair;
+extern ConVar cl_crosshairstyle;
+
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -25,11 +33,12 @@ class CHudWeapon : public CHudElement, public vgui::Panel
 {
 	DECLARE_CLASS_SIMPLE( CHudWeapon, vgui::Panel );
 public:
-	CHudWeapon( const char *pElementName );
+	explicit CHudWeapon( const char *pElementName );
 
 	virtual void	ApplySchemeSettings( vgui::IScheme *scheme );
 	virtual void	Paint( void );
 	virtual void	PerformLayout();
+	virtual bool    ShouldDraw();
 
 private:
 	CHudCrosshair *m_pCrosshair;
@@ -45,8 +54,24 @@ CHudWeapon::CHudWeapon( const char *pElementName ) :
 
 	m_pCrosshair = NULL;
 
-	SetHiddenBits( HIDEHUD_WEAPONSELECTION );
+	SetHiddenBits( HIDEHUD_PLAYERDEAD | HIDEHUD_CROSSHAIR );
 }
+
+bool CHudWeapon::ShouldDraw()
+{
+	//0 = default
+	//1 = default static
+	//2 = classic standard
+	//3 = classic dynamic
+	//4 = classic static
+	if ( !crosshair.GetBool() || cl_crosshairstyle.GetInt() < 2 || IsTakingAFreezecamScreenshot() || !cl_drawhud.GetBool() )
+	{
+		return false;
+	}
+
+	return CHudElement::ShouldDraw();
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -61,7 +86,6 @@ void CHudWeapon::ApplySchemeSettings( IScheme *scheme )
 	m_pCrosshair = GET_HUDELEMENT( CHudCrosshair );
 	//Assert( m_pCrosshair );
 }
-
 
 //-----------------------------------------------------------------------------
 // Performs layout
@@ -92,6 +116,8 @@ void CHudWeapon::Paint( void )
 	MDLCACHE_CRITICAL_SECTION();
 
 	C_BaseCombatWeapon *pWeapon = player->GetActiveWeapon();
+
+		// Draw the targeting zone around the pCrosshair
 	
 	if ( pWeapon )
 	{
@@ -99,6 +125,7 @@ void CHudWeapon::Paint( void )
 	}
 	else
 	{
+
 		if ( m_pCrosshair )
 		{
 			m_pCrosshair->ResetCrosshair();

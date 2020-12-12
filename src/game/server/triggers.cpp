@@ -34,6 +34,7 @@
 #include "ai_behavior_lead.h"
 #include "gameinterface.h"
 #include "ilagcompensationmanager.h"
+#include "weapon_c4.h"
 
 #ifdef HL2_DLL
 #include "hl2_player.h"
@@ -64,7 +65,7 @@ void Cmd_ShowtriggersToggle_f( const CCommand &args )
 	{
 		if ( IsTriggerClass(pEntity) )
 		{
-			// If a classname is specified, only show triggles of that type
+			// If a classname is specified, only show triggers of that type
 			if ( args.ArgC() > 1 )
 			{
 				const char *sClassname = args[1];
@@ -542,7 +543,7 @@ void CBaseTrigger::EndTouch(CBaseEntity *pOther)
 //-----------------------------------------------------------------------------
 // Purpose: Return true if the specified entity is touching us
 //-----------------------------------------------------------------------------
-bool CBaseTrigger::IsTouching( CBaseEntity *pOther )
+bool CBaseTrigger::IsTouching( const CBaseEntity *pOther ) const
 {
 	EHANDLE hOther;
 	hOther = pOther;
@@ -2329,6 +2330,43 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 			pOther->AddFlag( FL_BASEVELOCITY );
 		}
 		break;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Bomb reset trigger - places dropped bomb at the last valid player-held location
+//-----------------------------------------------------------------------------
+class CTriggerBombReset : public CBaseTrigger
+{
+public:
+	DECLARE_CLASS(CTriggerBombReset, CBaseTrigger);
+
+	void Spawn(void);
+	void Touch(CBaseEntity *pOther);
+
+	DECLARE_DATADESC();
+};
+
+LINK_ENTITY_TO_CLASS(trigger_bomb_reset, CTriggerBombReset);
+
+BEGIN_DATADESC(CTriggerBombReset)
+END_DATADESC()
+
+void CTriggerBombReset::Spawn(void)
+{
+	InitTrigger();
+
+	//the bomb is technically 'debris' so always set this flag
+	CollisionProp()->AddSolidFlags(FSOLID_TRIGGER_TOUCH_DEBRIS);
+}
+
+void CTriggerBombReset::Touch(CBaseEntity *pOther)
+{
+	// If the bomb touches this trigger, tell it to reset to its last known valid position.
+	CC4 *pC4 = dynamic_cast< CC4* > (pOther);
+	if (pC4)
+	{
+		pC4->ResetToLastValidPlayerHeldPosition();
 	}
 }
 

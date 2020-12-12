@@ -461,6 +461,11 @@ void CParticleProperty::OnParticleSystemDeleted( CNewParticleEffect *pEffect )
 	if ( iIndex == -1 )
 		return;
 
+	if ( m_pOuter )
+	{
+		m_pOuter->OnParticleEffectDeleted( pEffect );
+	}
+
 	m_ParticleEffects[iIndex].pParticleEffect.MarkDeleted();
 	m_ParticleEffects.Remove( iIndex );
 }
@@ -605,36 +610,70 @@ void CParticleProperty::UpdateControlPoint( ParticleEffectList_t *pEffect, int i
 		case PATTACH_POINT:
 		case PATTACH_POINT_FOLLOW:
 			{
-				C_BaseAnimating *pAnimating = pPoint->hEntity->GetBaseAnimating();
+			C_BaseAnimating *pAnimating = pPoint->hEntity->GetBaseAnimating();
 
-				Assert( pAnimating );
-				if ( pAnimating )
+			bool bValid = false;
+			Assert( pAnimating );
+			if ( pAnimating )
+			{
+				matrix3x4_t attachmentToWorld;
+
+				if ( pAnimating->IsViewModel() )
 				{
-					matrix3x4_t attachmentToWorld;
-
-					if ( !pAnimating->GetAttachment( pPoint->iAttachmentPoint, attachmentToWorld ) )
+					if ( pAnimating->GetAttachment( pPoint->iAttachmentPoint, attachmentToWorld ) )
 					{
-						// try C_BaseAnimating if attach point is not on the weapon
-						if ( !pAnimating->C_BaseAnimating::GetAttachment( pPoint->iAttachmentPoint, attachmentToWorld ) )
+						bValid = true;
+						MatrixVectors( attachmentToWorld, &vecForward, &vecRight, &vecUp );
+						MatrixPosition( attachmentToWorld, vecOrigin );
+
+						if ( pEffect->pParticleEffect->m_pDef->IsViewModelEffect() )
 						{
-							Warning( "Cannot update control point %d for effect '%s'.\n", pPoint->iAttachmentPoint, pEffect->pParticleEffect->GetEffectName() );
-							// Remove the effect cause this warning means something is orphaned
-							StopParticlesNamed( pEffect->pParticleEffect->GetEffectName() );
-							return;
+							FormatViewModelAttachment( vecOrigin, true );
 						}
 					}
+				}
+				else
+				{
+					// HACK_GETLOCALPLAYER_GUARD( "CParticleProperty::UpdateControlPoint" );
 
-					VMatrix vMat(attachmentToWorld);
-					MatrixTranslate( vMat, pPoint->vecOriginOffset );
-					MatrixVectors( vMat.As3x4(), &vecForward, &vecRight, &vecUp );
-					MatrixPosition( vMat.As3x4(), vecOrigin );
-
-					if ( pEffect->pParticleEffect->GetIsViewModelEffect() )
+					if ( pAnimating->GetAttachment( pPoint->iAttachmentPoint, attachmentToWorld ) )
 					{
-						FormatViewModelAttachment( vecOrigin, true );
+						bValid = true;
+						MatrixVectors( attachmentToWorld, &vecForward, &vecRight, &vecUp );
+#ifdef _DEBUG
+						float flTests[3] = {vecForward.Dot( vecRight ), vecRight.Dot( vecUp ), vecUp.Dot( vecForward )};
+						static float s_flMaxTest = 0.001f;
+						Assert( fabs( flTests[0] ) + fabs( flTests[1] ) + fabs( flTests[2] ) < s_flMaxTest );
+#endif
+						MatrixPosition( attachmentToWorld, vecOrigin );
+
+						if ( pEffect->pParticleEffect->m_pDef->IsViewModelEffect() )
+						{
+							FormatViewModelAttachment( vecOrigin, true );
+						}
 					}
 				}
 			}
+
+			if ( !bValid )
+			{
+				static bool bWarned = false;
+				if ( !bWarned )
+				{
+					bWarned = true;
+					DevWarning( "Attempted to attach particle effect %s to an unknown attachment on entity %s\n",
+						pEffect->pParticleEffect->m_pDef->GetName(), pAnimating ? pAnimating->GetClassname() : "(null)" );
+				}
+
+				// FIXME: what's the fallback? is it ok to kill the effect if we don't know where to attach it?
+				pEffect->pParticleEffect->StopEmission();
+			}
+			if ( !bValid )
+			{
+				AssertOnce( 0 );
+				return;
+			}
+		}
 			break;
 
 		case PATTACH_ABSORIGIN:

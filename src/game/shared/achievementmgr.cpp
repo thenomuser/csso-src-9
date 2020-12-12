@@ -1115,7 +1115,7 @@ bool CAchievementMgr::CheckAchievementsEnabled()
 #ifndef NO_STEAM
 			// Cheats get turned on automatically if you run with -dev which many people do internally, so allow cheats if developer is turned on and we're not running
 			// on Steam public
-			if ( developer.GetInt() == 0 || !steamapicontext->SteamUtils() || (k_EUniversePublic == steamapicontext->SteamUtils()->GetConnectedUniverse()) )
+			if ( developer.GetInt() == 0 || ( k_EUniverseInvalid == steamapicontext->SteamUtils()->GetConnectedUniverse() ) || ( k_EUniversePublic == steamapicontext->SteamUtils()->GetConnectedUniverse() ) )
 			{
 				Msg( "Achievements disabled: cheats turned on in this app session.\n" );
 				return false;

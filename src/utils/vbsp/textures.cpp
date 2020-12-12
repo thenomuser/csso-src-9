@@ -153,6 +153,13 @@ int	FindMiptex (const char *name)
 	{
 		textureref[i].flags |= SURF_NOLIGHT;
 	}
+	// Handle grenade clip.
+	else if ( ( propVal = GetMaterialVar( matID, "%compilegrenadeclip" ) ) && StringIsTrue( propVal ) )
+	{
+		textureref[i].contents |= CONTENTS_DETAIL;
+		textureref[i].contents |= CONTENTS_GRENADECLIP;
+		textureref[i].flags |= SURF_NODRAW | SURF_NOLIGHT;
+	}
 	else
 	{
 		// HANDLE ALL OF THE STUFF THAT IS RENDERED WITH THE MATERIAL THAT IS ON IT.

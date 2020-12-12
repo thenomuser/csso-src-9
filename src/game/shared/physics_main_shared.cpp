@@ -18,6 +18,7 @@
 #include "igamesystem.h"
 #include "utlmultilist.h"
 #include "tier1/callqueue.h"
+#include "engine/ivdebugoverlay.h"
 
 #ifdef PORTAL
 	#include "portal_util_shared.h"
@@ -75,7 +76,11 @@ ConVar debug_touchlinks( "debug_touchlinks", "0", 0, "Spew touch link activity" 
 #define DebugTouchlinks() false
 #endif
 
-
+ConVar sv_grenade_trajectory("sv_grenade_trajectory", "0", FCVAR_REPLICATED | FCVAR_CHEAT, "Shows grenade trajectory visualization in-game." );
+ConVar sv_grenade_trajectory_time("sv_grenade_trajectory_time", "20", FCVAR_REPLICATED, "Length of time grenade trajectory remains visible.", true, 0.1f, true, 20.0f );
+ConVar sv_grenade_trajectory_time_spectator("sv_grenade_trajectory_time_spectator", "4", FCVAR_REPLICATED, "Length of time grenade trajectory remains visible as a spectator.", true, 0.0f, true, 8.0f );
+ConVar sv_grenade_trajectory_thickness("sv_grenade_trajectory_thickness", "0.2", FCVAR_REPLICATED, "Visible thickness of grenade trajectory arc", true, 0.1f, true, 1.0f );
+ConVar sv_grenade_trajectory_dash("sv_grenade_trajectory_dash", "0", FCVAR_REPLICATED, "Dot-dash style grenade trajectory arc" );
 
 //-----------------------------------------------------------------------------
 // Portal-specific hack designed to eliminate re-entrancy in touch functions
@@ -783,6 +788,11 @@ groundlink_t *CBaseEntity::AddEntityToGroundList( CBaseEntity *other )
 	if ( this == other )
 		return NULL;
 
+	if ( other->IsMarkedForDeletion() )
+	{
+		return NULL;
+	}
+
 	// check if the edict is already in the list
 	groundlink_t *root = ( groundlink_t * )GetDataObject( GROUNDLINK );
 	if ( root )
@@ -1074,8 +1084,18 @@ const trace_t &CBaseEntity::GetTouchTrace( void )
 void CBaseEntity::PhysicsMarkEntitiesAsTouching( CBaseEntity *other, trace_t &trace )
 {
 	g_TouchTrace = trace;
-	PhysicsMarkEntityAsTouched( other );
-	other->PhysicsMarkEntityAsTouched( this );
+	touchlink_t *pLink0 = PhysicsMarkEntityAsTouched( other );
+	touchlink_t *pLInk1 = other->PhysicsMarkEntityAsTouched( this );
+
+	if ( pLink0 && !pLInk1 )
+	{
+		PhysicsNotifyOtherOfUntouch( other, this );
+	}
+	if ( pLInk1 && !pLink0 )
+	{
+		PhysicsNotifyOtherOfUntouch( this, other );
+	}
+	UTIL_ClearTrace( g_TouchTrace );
 }
 
 void CBaseEntity::PhysicsMarkEntitiesAsTouchingEventDriven( CBaseEntity *other, trace_t &trace )
@@ -1097,6 +1117,7 @@ void CBaseEntity::PhysicsMarkEntitiesAsTouchingEventDriven( CBaseEntity *other, 
 	{
 		link->touchStamp = TOUCHSTAMP_EVENT_DRIVEN;
 	}
+	UTIL_ClearTrace( g_TouchTrace );
 }
 
 //-----------------------------------------------------------------------------
@@ -1705,6 +1726,25 @@ void CBaseEntity::PhysicsToss( void )
 	if (IsEdictFree())
 		return;
 #endif
+
+	if ( debugoverlay && sv_grenade_trajectory.GetInt() && (GetFlags() & FL_GRENADE) )
+	{
+		QAngle angGrTrajAngles;
+		Vector vec3tempOrientation = (trace.endpos - trace.startpos);
+		VectorAngles( vec3tempOrientation, angGrTrajAngles );
+
+		float flGrTraThickness = sv_grenade_trajectory_thickness.GetFloat();
+		Vector vec3_GrTrajMin = Vector( 0, -flGrTraThickness, -flGrTraThickness );
+		Vector vec3_GrTrajMax = Vector( vec3tempOrientation.Length(), flGrTraThickness, flGrTraThickness );
+		bool bDotted = ( sv_grenade_trajectory_dash.GetInt() && (fmod( gpGlobals->curtime, 0.1f ) < 0.05f) );
+		
+		//extruded "line" is really a box for more visible thickness
+		debugoverlay->AddBoxOverlay( trace.startpos, vec3_GrTrajMin, vec3_GrTrajMax, angGrTrajAngles, 0, (bDotted ? 20 : 200), 0, 255, sv_grenade_trajectory_time.GetFloat() );
+
+		//per-bounce box
+		if (trace.fraction != 1.0f)
+			debugoverlay->AddBoxOverlay( trace.endpos, Vector( -2.0, -2.0, -2.0 ), Vector( 2.0, 2.0, 2.0 ), QAngle( 0, 0, 0 ), 220, 0, 0, 190, sv_grenade_trajectory_time.GetFloat() );
+	}	
 
 	if (trace.fraction != 1.0f)
 	{

@@ -288,6 +288,7 @@ public:
 	virtual void			Activate( void );
 	virtual void			SharedSpawn(); // Shared between client and server.
 	virtual void			ForceRespawn( void );
+	virtual void			PostSpawnPointSelection( void );
 
 	virtual void			InitialSpawn( void );
 	virtual void			InitHUD( void ) {}
@@ -371,7 +372,7 @@ public:
 	const char *			GetPlayerName() { return m_szNetname; }
 	void					SetPlayerName( const char *name );
 
-	int						GetUserID() { return engine->GetPlayerUserId( edict() ); }
+	int						GetUserID() const { return engine->GetPlayerUserId( edict() ); }
 	const char *			GetNetworkIDString(); 
 	virtual const Vector	GetPlayerMins( void ) const; // uses local player
 	virtual const Vector	GetPlayerMaxs( void ) const; // uses local player
@@ -390,6 +391,8 @@ public:
 	void					SmoothViewOnStairs( Vector& eyeOrigin );
 	virtual float			CalcRoll (const QAngle& angles, const Vector& velocity, float rollangle, float rollspeed);
 	void					CalcViewRoll( QAngle& eyeAngles );
+	virtual void			CalcViewBob( Vector& eyeOrigin );
+	virtual void			CalcAddViewmodelCameraAnimation( Vector& eyeOrigin, QAngle& eyeAngles );
 
 	virtual int				Save( ISave &save );
 	virtual int				Restore( IRestore &restore );
@@ -588,7 +591,7 @@ public:
 	float					GetTimeSinceLastUserCommand( void ) { return ( !IsConnected() || IsFakeClient() || IsBot() ) ? 0.f : gpGlobals->curtime - m_flLastUserCommandTime; }
 
 	// Team Handling
-	virtual void			ChangeTeam( int iTeamNum ) { ChangeTeam(iTeamNum,false, false); }
+	virtual void			ChangeTeam( int iTeamNum ) OVERRIDE { ChangeTeam( iTeamNum, false, false ); }
 	virtual void			ChangeTeam( int iTeamNum, bool bAutoTeam, bool bSilent );
 
 	// say/sayteam allowed?
@@ -658,6 +661,7 @@ public:
 
 	// Accessor methods
 	int		FragCount() const		{ return m_iFrags; }
+	int		AssistsCount() const	{ return m_iAssists; }
 	int		DeathCount() const		{ return m_iDeaths;}
 	bool	IsConnected() const		{ return m_iConnected != PlayerDisconnected; }
 	bool	IsDisconnecting() const	{ return m_iConnected == PlayerDisconnecting; }
@@ -685,10 +689,10 @@ public:
 
 	virtual void	ResetScores( void ) { ResetFragCount(); ResetDeathCount(); }
 	void	ResetFragCount();
-	void	IncrementFragCount( int nCount );
+	virtual void	IncrementFragCount( int nCount );
 
 	void	ResetDeathCount();
-	void	IncrementDeathCount( int nCount );
+	virtual void	IncrementDeathCount( int nCount );
 
 	void	SetArmorValue( int value );
 	void	IncrementArmorValue( int nCount, int nMaxValue = -1 );
@@ -1033,9 +1037,12 @@ private:
 	QAngle					m_vecAutoAim;
 	int						m_lastx, m_lasty;	// These are the previous update's crosshair angles, DON"T SAVE/RESTORE
 
+protected:
 	int						m_iFrags;
+	int						m_iAssists;
 	int						m_iDeaths;
 
+private:
 	float					m_flNextDecalTime;// next time this player can spray a decal
 
 	// Team Handling

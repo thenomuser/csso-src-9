@@ -50,6 +50,7 @@ struct solid_t;
 class ISave;
 class IRestore;
 class C_BaseAnimating;
+class C_BaseAnimatingOverlay;
 class C_AI_BaseNPC;
 struct EmitSound_t;
 class C_RecipientFilter;
@@ -253,6 +254,7 @@ public:
 	// This just picks one of the routes to IClientUnknown.
 	IClientUnknown*					GetIClientUnknown()	{ return this; }
 	virtual C_BaseAnimating*		GetBaseAnimating() { return NULL; }
+	virtual C_BaseAnimatingOverlay *GetBaseAnimatingOverlay() { return NULL; }
 	virtual void					SetClassname( const char *className );
 
 	string_t						m_iClassname;
@@ -447,6 +449,7 @@ public:
 	inline IPhysicsObject			*VPhysicsGetObject( void ) const { return m_pPhysicsObject; }
 	virtual int						VPhysicsGetObjectList( IPhysicsObject **pList, int listMax );
 	virtual bool					VPhysicsIsFlesh( void );
+	float							VPhysicsGetNonShadowMass( void ) const { return m_flNonShadowMass; }
 
 // IClientEntity implementation.
 public:
@@ -460,6 +463,9 @@ public:
 
 	virtual const Vector&			GetAbsOrigin( void ) const;
 	virtual const QAngle&			GetAbsAngles( void ) const;
+	inline Vector					Forward() const RESTRICT; ///< get my forward (+x) vector
+	inline Vector					Left() const RESTRICT;    ///< get my left    (+y) vector
+	inline Vector					Up() const RESTRICT;      ///< get my up      (+z) vector
 
 	const Vector&					GetNetworkOrigin() const;
 	const QAngle&					GetNetworkAngles() const;
@@ -572,11 +578,11 @@ public:
 	virtual bool					GetAttachmentVelocity( int number, Vector &originVel, Quaternion &angleVel );
 
 	// Team handling
-	virtual C_Team					*GetTeam( void );
+	virtual C_Team					*GetTeam( void ) const;
 	virtual int						GetTeamNumber( void ) const;
 	virtual void					ChangeTeam( int iTeamNum );			// Assign this entity to a team.
 	virtual int						GetRenderTeamNumber( void );
-	virtual bool					InSameTeam( C_BaseEntity *pEntity );	// Returns true if the specified entity is on the same team as this one
+	virtual bool					InSameTeam( const C_BaseEntity *pEntity ) const;	// Returns true if the specified entity is on the same team as this one
 	virtual bool					InLocalTeam( void );
 
 	// ID Target handling
@@ -704,6 +710,7 @@ public:
 	// Initialize things given a new model.
 	virtual CStudioHdr				*OnNewModel();
 	virtual void					OnNewParticleEffect( const char *pszParticleName, CNewParticleEffect *pNewParticleEffect );
+	virtual void					OnParticleEffectDeleted( CNewParticleEffect *pParticleEffect );
 
 	bool							IsSimulatedEveryTick() const;
 	bool							IsAnimatedEveryTick() const;
@@ -926,6 +933,7 @@ public:
 	void					PhysicsImpact( C_BaseEntity *other, trace_t &trace );
  	void					PhysicsMarkEntitiesAsTouching( C_BaseEntity *other, trace_t &trace );
 	void					PhysicsMarkEntitiesAsTouchingEventDriven( C_BaseEntity *other, trace_t &trace );
+	void					PhysicsTouchTriggers( const Vector *pPrevAbsOrigin = NULL );
 
 	// Physics helper
 	static void				PhysicsRemoveTouchedList( C_BaseEntity *ent );
@@ -1416,6 +1424,7 @@ private:
 protected:
 	// pointer to the entity's physics object (vphysics.dll)
 	IPhysicsObject					*m_pPhysicsObject;	
+	float							m_flNonShadowMass;	// cached mass (shadow controllers set mass to VPHYSICS_MAX_MASS, or 50000)
 
 #if !defined( NO_ENTITY_PREDICTION )
 	bool							m_bPredictionEligible;
@@ -1704,6 +1713,9 @@ protected:
 	RenderMode_t m_PreviousRenderMode;
 	color32 m_PreviousRenderColor;
 #endif
+
+private:
+	bool	m_bOldShouldDraw;
 };
 
 EXTERN_RECV_TABLE(DT_BaseEntity);

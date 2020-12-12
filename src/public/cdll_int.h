@@ -550,6 +550,7 @@ public:
 	virtual	const char			*Key_LookupBindingExact( const char *pBinding ) = 0;
 	
 	virtual void				AddPhonemeFile( const char *pszPhonemeFile ) = 0;
+	virtual float				GetPausedExpireTime( void ) = 0;
 
 };
 

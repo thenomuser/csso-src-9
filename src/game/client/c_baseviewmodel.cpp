@@ -21,6 +21,9 @@
 #ifdef TF_CLIENT_DLL
 	#include "tf_weaponbase.h"
 #endif
+#include "weapon_csbase.h"
+#include "weapon_basecsgrenade.h"
+#include "cs_shareddefs.h"
 
 #if defined( REPLAY_ENABLED )
 #include "replay/replaycamera.h"
@@ -39,11 +42,102 @@
 	ConVar cl_righthand( "cl_righthand", "1", FCVAR_ARCHIVE, "Use right-handed view models." );
 #endif
 
+extern ConVar r_drawviewmodel;
+
 #ifdef TF_CLIENT_DLL
 	ConVar cl_flipviewmodels( "cl_flipviewmodels", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Flip view models." );
 #endif
 
 void PostToolMessage( HTOOLHANDLE hEntity, KeyValues *msg );
+
+void C_BaseViewModel::OnNewParticleEffect( const char *pszParticleName, CNewParticleEffect *pNewParticleEffect )
+{
+	if ( FStrEq( pszParticleName, MOLOTOV_PARTICLE_EFFECT_NAME ) )
+	{
+		m_viewmodelParticleEffect = pNewParticleEffect;
+	}
+}
+
+void C_BaseViewModel::OnParticleEffectDeleted( CNewParticleEffect *pParticleEffect )
+{
+	BaseClass::OnParticleEffectDeleted( pParticleEffect );
+
+	if ( m_viewmodelParticleEffect == pParticleEffect )
+	{
+		m_viewmodelParticleEffect = NULL;
+	}
+}
+
+void C_BaseViewModel::UpdateParticles()
+{
+	C_BasePlayer *pPlayer = ToBasePlayer( GetOwner() );
+
+	if ( !pPlayer )
+		return;
+
+	if ( pPlayer->IsPlayerDead() )
+		return;
+
+	// Otherwise pass the event to our associated weapon
+	C_BaseCombatWeapon *pWeapon = GetOwningWeapon();
+	if ( !pWeapon )
+		return;
+
+	CWeaponCSBase *pCSWeapon = ( CWeaponCSBase* )pPlayer->GetActiveWeapon();
+	if ( !pCSWeapon )
+		return;
+
+	int iWeaponId = pCSWeapon->GetCSWeaponID();
+
+	bool shouldDrawPlayer = ( pPlayer->ShouldDraw() );
+	bool visible = r_drawviewmodel.GetBool() && pPlayer && !shouldDrawPlayer;
+
+	if ( visible && iWeaponId == WEAPON_MOLOTOV )
+	{
+		CBaseCSGrenade *pGren = dynamic_cast<CBaseCSGrenade*>( pPlayer->GetActiveWeapon() );
+
+		if ( pGren->IsPinPulled() )
+		{
+			//if ( !pGren->IsLoopingSoundPlaying() )
+			//{
+			//	pGren->SetLoopingSoundPlaying( true );
+			//	EmitSound( "Molotov.IdleLoop" );
+			//	//DevMsg( 1, "++++++++++>Playing Molotov.IdleLoop 2\n" );
+			//}
+
+			// TEST: [mlowrance] This is to test for attachment.
+			int iAttachment = -1;
+			if ( pWeapon && pWeapon->GetBaseAnimating() )
+				iAttachment = pWeapon->GetBaseAnimating()->LookupAttachment( "Wick" );
+
+			if ( iAttachment >= 0 )
+			{
+				if ( !m_viewmodelParticleEffect )
+				{
+					DispatchParticleEffect( MOLOTOV_PARTICLE_EFFECT_NAME, PATTACH_POINT_FOLLOW, this, "Wick" );
+				}
+			}
+		}
+	}
+	else
+	{
+		if ( m_viewmodelParticleEffect )
+		{
+			StopSound( "Molotov.IdleLoop" );
+			//DevMsg( 1, "---------->Stopping Molotov.IdleLoop 3\n" );
+			m_viewmodelParticleEffect->StopEmission( false, true );
+			m_viewmodelParticleEffect->SetRemoveFlag();
+			m_viewmodelParticleEffect = NULL;
+		}
+	}
+}
+
+void C_BaseViewModel::Simulate()
+{
+	UpdateParticles();
+	BaseClass::Simulate();
+	return;
+}
 
 void FormatViewModelAttachment( Vector &vOrigin, bool bInverse )
 {
@@ -177,7 +271,13 @@ bool C_BaseViewModel::Interpolate( float currentTime )
 		elapsed_time = 0;
 	}
 
-	float dt = elapsed_time * GetSequenceCycleRate( pStudioHdr, GetSequence() ) * GetPlaybackRate();
+	float dt = elapsed_time * (GetPlaybackRate() * GetSequenceCycleRate( pStudioHdr, GetSequence() )) + m_fCycleOffset;
+
+	if ( dt < 0.0f )
+	{
+		dt = 0.0f;
+	}
+
 	if ( dt >= 1.0f )
 	{
 		if ( !IsSequenceLooping( GetSequence() ) )
@@ -286,6 +386,8 @@ int C_BaseViewModel::DrawModel( int flags )
 	if ( !m_bReadyToDraw )
 		return 0;
 
+	CMatRenderContextPtr pRenderContext( materials );
+
 	if ( flags & STUDIO_RENDER )
 	{
 		// Determine blending amount and tell engine
@@ -302,6 +404,9 @@ int C_BaseViewModel::DrawModel( int flags )
 		GetColorModulation( color );
 		render->SetColorModulation(	color );
 	}
+
+	if ( ShouldFlipViewModel() )
+		pRenderContext->CullMode( MATERIAL_CULLMODE_CW );
 		
 	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
 	C_BaseCombatWeapon *pWeapon = GetOwningWeapon();
@@ -319,6 +424,8 @@ int C_BaseViewModel::DrawModel( int flags )
 	{
 		ret = BaseClass::DrawModel( flags );
 	}
+
+	pRenderContext->CullMode( MATERIAL_CULLMODE_CCW );
 
 	// Now that we've rendered, reset the animation restart flag
 	if ( flags & STUDIO_RENDER )
@@ -454,6 +561,7 @@ void C_BaseViewModel::UpdateAnimationParity( void )
 		// FIXME:  Do we need the magic 0.1?
 		SetCycle( 0.0f ); // GetSequenceCycleRate( GetSequence() ) * 0.1;
 		m_flAnimTime = curtime;
+		m_fCycleOffset = 0.0f;
 	}
 }
 
@@ -508,4 +616,19 @@ void C_BaseViewModel::GetBoneControllers(float controllers[MAXSTUDIOBONECTRLS])
 RenderGroup_t C_BaseViewModel::GetRenderGroup()
 {
 	return RENDER_GROUP_VIEW_MODEL_OPAQUE;
+}
+
+int C_HandsViewModel::InternalDrawModel( int flags )
+{
+	CMatRenderContextPtr pRenderContext( materials );
+
+	C_BaseViewModel *pViewmodel = (C_BaseViewModel*)GetFollowedEntity();
+	if ( pViewmodel && pViewmodel->ShouldFlipViewModel() )
+		pRenderContext->CullMode( MATERIAL_CULLMODE_CW );
+
+	int r = BaseClass::InternalDrawModel( flags );
+
+	pRenderContext->CullMode( MATERIAL_CULLMODE_CCW );
+
+	return r;
 }

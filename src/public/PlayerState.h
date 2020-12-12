@@ -47,6 +47,7 @@ public:
 	bool		replay;
 	int			frags;
 	int			deaths;
+	int			assists;
 #endif
 
 // NOTE:  Only care about this stuff in game/client dlls

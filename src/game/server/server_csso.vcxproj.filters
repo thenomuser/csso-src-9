@@ -1256,6 +1256,9 @@
     <ClInclude Include="locksounds.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="logic_random_outputs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="maprules.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -1535,175 +1538,181 @@
     <ClInclude Include="world.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\achievements_cs.h">
+    <ClInclude Include="..\..\game\shared\cstrike\achievements_cs.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\basecsgrenade_projectile.h">
+    <ClInclude Include="..\..\game\shared\cstrike\basecsgrenade_projectile.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\cs_achievement_constants.h">
+    <ClInclude Include="cstrike\effects\chicken.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\cs_ammodef.h">
+    <ClInclude Include="..\..\game\shared\cstrike\cs_achievement_constants.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\cs_autobuy.h">
+    <ClInclude Include="..\..\game\shared\cstrike\cs_ammodef.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\cs_client.h">
+    <ClInclude Include="cstrike\cs_autobuy.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\cs_gamerules.h">
+    <ClInclude Include="cstrike\cs_client.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\cs_gamestats.h">
+    <ClInclude Include="..\..\game\shared\cstrike\cs_gamerules.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\cs_gamestats_shared.h">
+    <ClInclude Include="cstrike\cs_gamestats.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\cs_player.h">
+    <ClInclude Include="..\..\game\shared\cstrike\cs_gamestats_shared.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\cs_player_resource.h">
+    <ClInclude Include="..\..\game\shared\cstrike\cs_loadout.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\cs_playeranimstate.h">
+    <ClInclude Include="cstrike\cs_player.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\cs_shareddefs.h">
+    <ClInclude Include="cstrike\cs_player_resource.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\cs_team.h">
+    <ClInclude Include="..\..\game\shared\cstrike\cs_playeranimstate.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\cs_urlretrieveprices.h">
+    <ClInclude Include="..\..\game\shared\cstrike\cs_shareddefs.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\cs_weapon_parse.h">
+    <ClInclude Include="cstrike\cs_team.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\decoy_projectile.h">
+    <ClInclude Include="..\..\game\shared\cstrike\cs_urlretrieveprices.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\flashbang_projectile.h">
+    <ClInclude Include="..\..\game\shared\cstrike\cs_weapon_parse.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\func_bomb_target.h">
+    <ClInclude Include="..\..\game\shared\cstrike\decoy_projectile.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\funfact_cs.h">
+    <ClInclude Include="..\..\game\shared\cstrike\flashbang_projectile.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\funfactmgr_cs.h">
+    <ClInclude Include="cstrike\func_bomb_target.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\fx_cs_shared.h">
+    <ClInclude Include="cstrike\funfact_cs.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\hegrenade_projectile.h">
+    <ClInclude Include="cstrike\funfactmgr_cs.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\holiday_gift.h">
+    <ClInclude Include="..\..\game\shared\cstrike\fx_cs_shared.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\effects\inferno.h">
+    <ClInclude Include="..\..\game\shared\cstrike\hegrenade_projectile.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\mapinfo.h">
+    <ClInclude Include="cstrike\holiday_gift.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\molotov_projectile.h">
+    <ClInclude Include="cstrike\effects\inferno.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\smokegrenade_projectile.h">
+    <ClInclude Include="cstrike\mapinfo.h">
+      <Filter>Source Files\CounterStrike DLL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\game\shared\cstrike\molotov_projectile.h">
+      <Filter>Source Files\CounterStrike DLL</Filter>
+    </ClInclude>
+    <ClInclude Include="cstrike\smokegrenade_projectile.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
     <ClInclude Include="..\..\game\shared\steamworks_gamestats.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\te_shotgun_shot.h">
+    <ClInclude Include="cstrike\te_shotgun_shot.h">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClInclude>
-    <ClInclude Include="csso\bot\cs_bot.h">
+    <ClInclude Include="cstrike\bot\cs_bot.h">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClInclude>
-    <ClInclude Include="csso\bot\cs_bot_chatter.h">
+    <ClInclude Include="cstrike\bot\cs_bot_chatter.h">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClInclude>
-    <ClInclude Include="csso\bot\cs_bot_manager.h">
+    <ClInclude Include="cstrike\bot\cs_bot_manager.h">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClInclude>
-    <ClInclude Include="csso\bot\cs_gamestate.h">
+    <ClInclude Include="cstrike\bot\cs_gamestate.h">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\bot\bot.h">
+    <ClInclude Include="..\..\game\shared\cstrike\bot\bot.h">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\bot\bot_constants.h">
+    <ClInclude Include="..\..\game\shared\cstrike\bot\bot_constants.h">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\bot\bot_manager.h">
+    <ClInclude Include="..\..\game\shared\cstrike\bot\bot_manager.h">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\bot\bot_profile.h">
+    <ClInclude Include="..\..\game\shared\cstrike\bot\bot_profile.h">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\bot\bot_util.h">
+    <ClInclude Include="..\..\game\shared\cstrike\bot\bot_util.h">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\bot\shared_util.h">
+    <ClInclude Include="..\..\game\shared\cstrike\bot\shared_util.h">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="csso\hostage\cs_simple_hostage.h">
+    <ClInclude Include="cstrike\hostage\cs_simple_hostage.h">
       <Filter>Source Files\CounterStrike DLL\Hostage</Filter>
     </ClInclude>
-    <ClInclude Include="csso\cs_nav.h">
+    <ClInclude Include="cstrike\cs_nav.h">
       <Filter>Source Files\CounterStrike DLL\Navigation Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="csso\cs_nav_area.h">
+    <ClInclude Include="cstrike\cs_nav_area.h">
       <Filter>Source Files\CounterStrike DLL\Navigation Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="csso\cs_nav_mesh.h">
+    <ClInclude Include="cstrike\cs_nav_mesh.h">
       <Filter>Source Files\CounterStrike DLL\Navigation Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="csso\cs_nav_path.h">
+    <ClInclude Include="cstrike\cs_nav_path.h">
       <Filter>Source Files\CounterStrike DLL\Navigation Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="csso\cs_nav_pathfind.h">
+    <ClInclude Include="cstrike\cs_nav_pathfind.h">
       <Filter>Source Files\CounterStrike DLL\Navigation Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\weapon_basecsgrenade.h">
+    <ClInclude Include="..\..\game\shared\cstrike\weapon_basecsgrenade.h">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\weapon_c4.h">
+    <ClInclude Include="..\..\game\shared\cstrike\weapon_c4.h">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\weapon_csbase.h">
+    <ClInclude Include="..\..\game\shared\cstrike\weapon_csbase.h">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\weapon_csbasegun.h">
+    <ClInclude Include="..\..\game\shared\cstrike\weapon_csbasegun.h">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\weapon_decoy.h">
+    <ClInclude Include="..\..\game\shared\cstrike\weapon_decoy.h">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\weapon_flashbang.h">
+    <ClInclude Include="..\..\game\shared\cstrike\weapon_flashbang.h">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\weapon_hegrenade.h">
+    <ClInclude Include="..\..\game\shared\cstrike\weapon_hegrenade.h">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\weapon_ironsightcontroller.h">
+    <ClInclude Include="..\..\game\shared\cstrike\weapon_ironsightcontroller.h">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\weapon_knife.h">
+    <ClInclude Include="..\..\game\shared\cstrike\weapon_knife.h">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\weapon_molotov.h">
+    <ClInclude Include="..\..\game\shared\cstrike\weapon_molotov.h">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\game\shared\csso\weapon_smokegrenade.h">
+    <ClInclude Include="..\..\game\shared\cstrike\weapon_smokegrenade.h">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="nav.h">
@@ -2458,6 +2467,9 @@
     <ClCompile Include="logic_navigation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="logic_random_outputs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="logicauto.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2908,421 +2920,430 @@
     <ClCompile Include="world.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\achievements_cs.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\achievements_cs.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\basecsgrenade_projectile.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\basecsgrenade_projectile.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\cs_ammodef.cpp">
+    <ClCompile Include="cstrike\effects\chicken.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_autobuy.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_ammodef.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\cs_blackmarket.cpp">
+    <ClCompile Include="cstrike\cs_autobuy.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_client.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_blackmarket.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_eventlog.cpp">
+    <ClCompile Include="cstrike\cs_client.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_gameinterface.cpp">
+    <ClCompile Include="cstrike\cs_eventlog.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\cs_gamemovement.cpp">
+    <ClCompile Include="cstrike\cs_gameinterface.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\cs_gamerules.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_gamemovement.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_gamestats.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_gamerules.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\cs_gamestats_shared.cpp">
+    <ClCompile Include="cstrike\cs_gamestats.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_hltvdirector.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_gamestats_shared.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_player.cpp">
+    <ClCompile Include="cstrike\cs_hltvdirector.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_player_resource.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_loadout.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\cs_player_shared.cpp">
+    <ClCompile Include="cstrike\cs_player.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\cs_playeranimstate.cpp">
+    <ClCompile Include="cstrike\cs_player_resource.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_playermove.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_player_shared.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\cs_shareddefs.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_playeranimstate.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_team.cpp">
+    <ClCompile Include="cstrike\cs_playermove.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\cs_urlretrieveprices.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_shareddefs.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\cs_usermessages.cpp">
+    <ClCompile Include="cstrike\cs_team.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_vehicle_jeep.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_urlretrieveprices.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\cs_weapon_parse.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_usermessages.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\decoy_projectile.cpp">
+    <ClCompile Include="cstrike\cs_vehicle_jeep.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\flashbang_projectile.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\cs_weapon_parse.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\func_bomb_target.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\decoy_projectile.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\func_buy_zone.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\flashbang_projectile.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\func_hostage_rescue.cpp">
+    <ClCompile Include="cstrike\func_bomb_target.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\funfact_cs.cpp">
+    <ClCompile Include="cstrike\func_buy_zone.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\funfactmgr_cs.cpp">
+    <ClCompile Include="cstrike\func_hostage_rescue.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\fx_cs_shared.cpp">
+    <ClCompile Include="cstrike\funfact_cs.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\hegrenade_projectile.cpp">
+    <ClCompile Include="cstrike\funfactmgr_cs.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\holiday_gift.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\fx_cs_shared.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\effects\inferno.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\hegrenade_projectile.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\infernoshared.cpp">
+    <ClCompile Include="cstrike\holiday_gift.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\info_view_parameters.cpp">
+    <ClCompile Include="cstrike\effects\inferno.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\item_ammo.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\infernoshared.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\item_assaultsuit.cpp">
+    <ClCompile Include="cstrike\info_view_parameters.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\item_defuser.cpp">
+    <ClCompile Include="cstrike\item_ammo.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\item_kevlar.cpp">
+    <ClCompile Include="cstrike\item_assaultsuit.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\item_nvgs.cpp">
+    <ClCompile Include="cstrike\item_defuser.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\mapinfo.cpp">
+    <ClCompile Include="cstrike\item_kevlar.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\molotov_projectile.cpp">
+    <ClCompile Include="cstrike\item_nvgs.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\point_surroundtest.cpp">
+    <ClCompile Include="cstrike\mapinfo.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\smokegrenade_projectile.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\molotov_projectile.cpp">
+      <Filter>Source Files\CounterStrike DLL</Filter>
+    </ClCompile>
+    <ClCompile Include="cstrike\point_surroundtest.cpp">
+      <Filter>Source Files\CounterStrike DLL</Filter>
+    </ClCompile>
+    <ClCompile Include="cstrike\smokegrenade_projectile.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\game\shared\steamworks_gamestats.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\te_radioicon.cpp">
+    <ClCompile Include="cstrike\te_radioicon.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\te_shotgun_shot.cpp">
+    <ClCompile Include="cstrike\te_shotgun_shot.cpp">
       <Filter>Source Files\CounterStrike DLL</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_chatter.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_chatter.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_event.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_event.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_event_bomb.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_event_bomb.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_event_player.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_event_player.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_event_weapon.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_event_weapon.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_init.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_init.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_listen.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_listen.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_manager.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_manager.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_nav.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_nav.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_pathfind.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_pathfind.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_radio.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_radio.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_statemachine.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_statemachine.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_update.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_update.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_vision.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_vision.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_weapon.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_weapon.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_bot_weapon_id.cpp">
+    <ClCompile Include="cstrike\bot\cs_bot_weapon_id.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\cs_gamestate.cpp">
+    <ClCompile Include="cstrike\bot\cs_gamestate.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\bot\bot.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\bot\bot.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\bot\bot_hide.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\bot\bot_hide.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\bot\bot_manager.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\bot\bot_manager.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\bot\bot_profile.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\bot\bot_profile.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\bot\bot_util.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\bot\bot_util.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\bot\shared_util.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\bot\shared_util.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\Shared</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_attack.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_attack.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_buy.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_buy.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_defuse_bomb.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_defuse_bomb.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_escape_from_bomb.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_escape_from_bomb.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_escape_from_flames.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_escape_from_flames.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_fetch_bomb.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_fetch_bomb.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_follow.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_follow.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_hide.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_hide.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_hunt.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_hunt.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_idle.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_idle.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_investigate_noise.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_investigate_noise.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_move_to.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_move_to.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_open_door.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_open_door.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_pickup_hostage.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_pickup_hostage.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_plant_bomb.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_plant_bomb.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\bot\states\cs_bot_use_entity.cpp">
+    <ClCompile Include="cstrike\bot\states\cs_bot_use_entity.cpp">
       <Filter>Source Files\CounterStrike DLL\Bot\States</Filter>
     </ClCompile>
-    <ClCompile Include="csso\hostage\cs_simple_hostage.cpp">
+    <ClCompile Include="cstrike\hostage\cs_simple_hostage.cpp">
       <Filter>Source Files\CounterStrike DLL\Hostage</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_nav_area.cpp">
+    <ClCompile Include="cstrike\cs_nav_area.cpp">
       <Filter>Source Files\CounterStrike DLL\Navigation Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_nav_generate.cpp">
+    <ClCompile Include="cstrike\cs_nav_generate.cpp">
       <Filter>Source Files\CounterStrike DLL\Navigation Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_nav_mesh.cpp">
+    <ClCompile Include="cstrike\cs_nav_mesh.cpp">
       <Filter>Source Files\CounterStrike DLL\Navigation Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="csso\cs_nav_path.cpp">
+    <ClCompile Include="cstrike\cs_nav_path.cpp">
       <Filter>Source Files\CounterStrike DLL\Navigation Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_ak47.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_ak47.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_aug.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_aug.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_awp.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_awp.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_basecsgrenade.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_basecsgrenade.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_bizon.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_bizon.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_c4.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_c4.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_csbase.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_csbase.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_csbasegun.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_csbasegun.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_cz75.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_cz75.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_deagle.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_deagle.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_decoy.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_decoy.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_elite.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_elite.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_famas.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_famas.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_fiveseven.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_fiveseven.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_flashbang.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_flashbang.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_g3sg1.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_g3sg1.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_galilar.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_galilar.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_glock.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_glock.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_hegrenade.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_hegrenade.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_hkp2000.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_hkp2000.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_ironsightcontroller.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_ironsightcontroller.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_knife.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_knife.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_m249.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_m249.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_m4a1_silencer.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_m4a1_silencer.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_m4a4.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_m4a4.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_mac10.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_mac10.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_mag7.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_mag7.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_molotov.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_molotov.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_mp5sd.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_mp5sd.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_mp7.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_mp7.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_mp9.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_mp9.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_negev.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_negev.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_nova.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_nova.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_p250.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_p250.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_p90.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_p90.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_sawedoff.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_revolver.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_scar20.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_sawedoff.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_sg556.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_scar20.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_smokegrenade.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_sg556.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_ssg08.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_smokegrenade.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_taser.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_ssg08.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_tec9.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_taser.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_ump45.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_tec9.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_usp.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_ump45.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\game\shared\csso\weapon_xm1014.cpp">
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_usp.cpp">
+      <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\game\shared\cstrike\weapon_xm1014.cpp">
       <Filter>Source Files\CounterStrike DLL\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="nav_area.cpp">

@@ -70,7 +70,7 @@ public:
 	virtual void EndTouch(CBaseEntity *pOther);
 	virtual void StartTouchAll() {}
 	virtual void EndTouchAll() {}
-	bool IsTouching( CBaseEntity *pOther );
+	virtual bool IsTouching( const CBaseEntity *pOther ) const;
 
 	CBaseEntity *GetTouchedEntityOfType( const char *sClassName );
 

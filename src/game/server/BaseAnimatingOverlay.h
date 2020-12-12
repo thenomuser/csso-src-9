@@ -138,6 +138,8 @@ private:
 	//int				m_nActiveBaseLayers;
 
 public:
+
+	virtual CBaseAnimatingOverlay *	GetBaseAnimatingOverlay() { return this; }
 	
 	virtual void	OnRestore();
 

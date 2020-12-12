@@ -1224,13 +1224,11 @@ void CHudVote::MsgFunc_VoteStart( bf_read &msg )
 	}
 
 	// DisplayString
-	char szIssue[k_MAX_VOTE_NAME_LENGTH];
-	szIssue[0] = 0;
+	char szIssue[k_MAX_VOTE_NAME_LENGTH] = { 0 };
 	msg.ReadString( szIssue, sizeof(szIssue) );
 
 	// DetailString
-	char szParam1[k_MAX_VOTE_NAME_LENGTH];
-	szParam1[0] = 0;
+	char szParam1[k_MAX_VOTE_NAME_LENGTH] = { 0 };
 	msg.ReadString( szParam1, sizeof(szParam1) );
 
 	m_bIsYesNoVote = msg.ReadByte();

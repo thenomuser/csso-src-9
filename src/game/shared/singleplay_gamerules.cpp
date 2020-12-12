@@ -177,7 +177,7 @@ bool CSingleplayRules::Damage_ShouldNotBleed( int iDmgType )
 	bool CSingleplayRules::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBaseCombatWeapon *pWeapon )
 	{
 		//Must have ammo
-		if ( ( pWeapon->HasAnyAmmo() == false ) && ( pPlayer->GetAmmoCount( pWeapon->m_iPrimaryAmmoType ) <= 0 ) )
+		if ( (pWeapon->HasAnyAmmo() == false) && (pWeapon->GetReserveAmmoCount( AMMO_POSITION_PRIMARY ) <= 0) )
 			return false;
 
 		//Always take a loaded gun if we have nothing else
@@ -238,7 +238,7 @@ bool CSingleplayRules::Damage_ShouldNotBleed( int iDmgType )
 				continue;
 
 			// We must have primary ammo
-			if ( pWeapon->UsesClipsForAmmo1() && pWeapon->Clip1() <= 0 && !pPlayer->GetAmmoCount( pWeapon->GetPrimaryAmmoType() ) )
+			if ( pWeapon->UsesClipsForAmmo1() && pWeapon->Clip1() <= 0 && !pWeapon->GetReserveAmmoCount( AMMO_POSITION_PRIMARY ) )
 				continue;
 
 			// This is a better candidate than what we had.

@@ -1724,7 +1724,7 @@ public:
 		return (IServer *)&sv;
 	}
 
-	virtual void SetPausedForced( bool bPaused, float flDuration /*= -1.f*/ )
+	virtual void SetPausedForced( bool bPaused, float flDuration /*= -1.f*/ ) OVERRIDE
 	{
 		sv.SetPausedForced( bPaused, flDuration );
 	}

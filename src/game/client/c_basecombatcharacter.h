@@ -39,6 +39,8 @@ public:
 	virtual bool	IsBaseCombatCharacter( void ) { return true; };
 	virtual C_BaseCombatCharacter *MyCombatCharacterPointer( void ) { return this; }
 
+	virtual void DropPhysicsMag( const char *options ) {}
+
 	// -----------------------
 	// Vision
 	// -----------------------
@@ -60,6 +62,8 @@ public:
 	virtual bool IsLineOfSightClear( CBaseEntity *entity, LineOfSightCheckType checkType = IGNORE_NOTHING ) const;// strictly LOS check with no other considerations
 	virtual bool IsLineOfSightClear( const Vector &pos, LineOfSightCheckType checkType = IGNORE_NOTHING, CBaseEntity *entityToIgnore = NULL ) const;
 
+	int	LastHitGroup() const { return m_LastHitGroup; }
+
 
 	// -----------------------
 	// Ammo
@@ -73,6 +77,7 @@ public:
 	C_BaseCombatWeapon*	Weapon_OwnsThisType( const char *pszWeapon, int iSubType = 0 ) const;  // True if already owns a weapon of this class
 	virtual	bool		Weapon_Switch( C_BaseCombatWeapon *pWeapon, int viewmodelindex = 0 );
 	virtual bool		Weapon_CanSwitchTo(C_BaseCombatWeapon *pWeapon);
+	virtual C_BaseCombatWeapon *Weapon_GetSlot( int slot ) const;
 	
 	// I can't use my current weapon anymore. Switch me to the next best weapon.
 	bool SwitchToNextBestWeapon(C_BaseCombatWeapon *pCurrent);
@@ -83,6 +88,10 @@ public:
 
 	// This is a sort of hack back-door only used by physgun!
 	void SetAmmoCount( int iCount, int iAmmoIndex );
+
+	bool HasEverBeenInjured( void ) const;
+	float GetTimeSinceLastInjury( void ) const;
+	RelativeDamagedDirection_t GetLastInjuryRelativeDirection( void ) { return m_nRelativeDirectionOfLastInjury; }
 
 	float				GetNextAttack() const { return m_flNextAttack; }
 	void				SetNextAttack( float flWait ) { m_flNextAttack = flWait; }
@@ -119,10 +128,16 @@ protected:
 private:
 	bool				ComputeLOS( const Vector &vecEyePosition, const Vector &vecTarget ) const;
 
+public:
+	int m_LastHitGroup;
+
+private:
 	CNetworkArray( int, m_iAmmo, MAX_AMMO_TYPES );
 
 	CHandle<C_BaseCombatWeapon>		m_hMyWeapons[MAX_WEAPONS];
 	CHandle< C_BaseCombatWeapon > m_hActiveWeapon;
+	float m_flTimeOfLastInjury;
+	RelativeDamagedDirection_t m_nRelativeDirectionOfLastInjury;
 
 #ifdef GLOWS_ENABLE
 	bool				m_bClientSideGlowEnabled;	// client-side only value used for spectator

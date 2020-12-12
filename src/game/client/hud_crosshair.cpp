@@ -17,6 +17,8 @@
 #include "VGuiMatSurface/IMatSystemSurface.h"
 #include "client_virtualreality.h"
 #include "sourcevr/isourcevirtualreality.h"
+#include "weapon_csbase.h"
+#include "c_cs_player.h"
 
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"
@@ -92,6 +94,16 @@ bool CHudCrosshair::ShouldDraw( void )
 	C_BaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
 	if ( pWeapon && !pWeapon->ShouldDrawCrosshair() )
 		return false;
+	
+#if IRONSIGHT
+	C_CSPlayer* pCSPlayer = C_CSPlayer::GetLocalCSPlayer();
+	CWeaponCSBase* pCSWeapon = pCSPlayer->GetActiveCSWeapon();
+	if ( pCSWeapon && pCSWeapon->GetIronSightController() )
+	{
+		if ( pCSWeapon->GetIronSightController()->ShouldHideCrossHair() )
+			return false;
+	}
+#endif
 
 #ifdef PORTAL
 	C_Portal_Player *portalPlayer = ToPortalPlayer(pPlayer);

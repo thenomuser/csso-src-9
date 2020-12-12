@@ -237,6 +237,7 @@ public:
 	virtual bool		Weapon_SlotOccupied( CBaseCombatWeapon *pWeapon );
 	virtual CBaseCombatWeapon *Weapon_GetSlot( int slot ) const;
 	CBaseCombatWeapon	*Weapon_GetWpnForAmmo( int iAmmoIndex );
+	virtual bool		ShouldPickupItemSilently( CBaseCombatCharacter *pNewOwner ) { return false; }
 
 
 	// For weapon strip
@@ -264,6 +265,7 @@ public:
 	virtual void 			NotifyFriendsOfDamage( CBaseEntity *pAttackerEntity ) {}
 	virtual bool			HasEverBeenInjured( int team = TEAM_ANY ) const;			// return true if we have ever been injured by a member of the given team
 	virtual float			GetTimeSinceLastInjury( int team = TEAM_ANY ) const;		// return time since we were hurt by a member of the given team
+	RelativeDamagedDirection_t GetLastInjuryRelativeDirection( void ) { return m_nRelativeDirectionOfLastInjury; }
 
 
 	virtual void			OnPlayerKilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &info ) {}
@@ -367,7 +369,7 @@ public:
 	virtual bool		RemoveEntityRelationship( CBaseEntity *pEntity );
 	virtual void		AddClassRelationship( Class_T nClass, Disposition_t nDisposition, int nPriority );
 
-	virtual void		ChangeTeam( int iTeamNum );
+	virtual void		ChangeTeam( int iTeamNum ) OVERRIDE;
 
 	// Nav hull type
 	Hull_t	GetHullType() const				{ return m_eHull; }
@@ -494,8 +496,11 @@ private:
 	static int					m_lastInteraction;	// Last registered interaction #
 	static Relationship_t**		m_DefaultRelationship;
 
+public:
 	// attack/damage
-	int					m_LastHitGroup;			// the last body region that took damage
+	CNetworkVar( int, m_LastHitGroup );			// the last body region that took damage
+
+private:
 	float				m_flDamageAccumulator;	// so very small amounts of damage do not get lost.
 	int					m_iDamageCount;			// # of times NPC has been damaged.  used for tracking 1-shot kills.
 	
@@ -530,7 +535,10 @@ protected:
 		int team;					// which team hurt us (TEAM_INVALID means slot unused)
 		IntervalTimer interval;		// how long has it been
 	};
-	DamageHistory m_damageHistory[ MAX_DAMAGE_TEAMS ];
+	DamageHistory m_damageHistory[MAX_DAMAGE_TEAMS];
+
+	CNetworkVar( float, m_flTimeOfLastInjury );
+	CNetworkVar( RelativeDamagedDirection_t, m_nRelativeDirectionOfLastInjury );
 
 	// last known navigation area of player - NULL if unknown
 	CNavArea *m_lastNavArea;

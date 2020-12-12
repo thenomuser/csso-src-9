@@ -9,6 +9,7 @@
 #include "movevars_shared.h"
 #include "util_shared.h"
 #include "datacache/imdlcache.h"
+#include "cs_ammodef.h"
 #if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
 #include "tf_gamerules.h"
 #endif
@@ -86,6 +87,8 @@
 		}
 	};
 #endif
+
+ConVar sv_infinite_ammo( "sv_infinite_ammo", "0", FCVAR_REPLICATED, "Player's active weapon will never run out of ammo. If set to 2 then player has infinite total ammo but still has to reload the magazine." );
 
 #ifdef CLIENT_DLL
 ConVar mp_usehwmmodels( "mp_usehwmmodels", "0", NULL, "Enable the use of the hw morph models. (-1 = never, 1 = always, 0 = based upon GPU)" ); // -1 = never, 0 = if hasfastvertextextures, 1 = always
@@ -294,6 +297,34 @@ void CBasePlayer::ItemPostFrame()
 	// remove this line and call ImpulseCommands instead.
 	m_nImpulse = 0;
 #endif
+
+	extern ConVar sv_infinite_ammo;
+	if ( (sv_infinite_ammo.GetInt() == 1) && (GetActiveWeapon() != NULL) )
+	{
+		CBaseCombatWeapon *pWeapon = GetActiveWeapon();
+
+		pWeapon->m_iClip1 = pWeapon->GetMaxClip1();
+		pWeapon->m_iClip2 = pWeapon->GetMaxClip2();
+
+#if defined( GAME_DLL )
+
+		if ( pWeapon->GetWpnData().iFlags & ITEM_FLAG_EXHAUSTIBLE )
+		{
+			int iPrimaryAmmoType = pWeapon->GetPrimaryAmmoType();
+			if ( iPrimaryAmmoType >= 0 )
+				SetAmmoCount( GetAmmoDef()->MaxCarry( iPrimaryAmmoType, this ), iPrimaryAmmoType );
+
+			int iSecondaryAmmoType = pWeapon->GetSecondaryAmmoType();
+			if ( iSecondaryAmmoType >= 0 )
+				SetAmmoCount( GetAmmoDef()->MaxCarry( iSecondaryAmmoType, this ), iSecondaryAmmoType );
+		}
+		else
+		{
+			pWeapon->SetReserveAmmoCount( AMMO_POSITION_PRIMARY, pWeapon->GetReserveAmmoMax( AMMO_POSITION_PRIMARY ), true );
+			pWeapon->SetReserveAmmoCount( AMMO_POSITION_SECONDARY, pWeapon->GetReserveAmmoMax( AMMO_POSITION_SECONDARY ), true );
+		}
+#endif
+	}
 }
 
 
@@ -513,7 +544,7 @@ void CBasePlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOri
 	float speed;
 	float velrun;
 	float velwalk;
-	int	fLadder;
+	bool fLadder;
 
 	if ( m_flStepSoundTime > 0 )
 	{
@@ -548,12 +579,7 @@ void CBasePlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOri
 	bool movingalongground = ( groundspeed > 0.0001f );
 	bool moving_fast_enough =  ( speed >= velwalk );
 
-#ifdef PORTAL
-	// In Portal we MUST play footstep sounds even when the player is moving very slowly
-	// This is used to count the number of footsteps they take in the challenge mode
-	// -Jeep
-	moving_fast_enough = true;
-#endif
+
 
 	// To hear step sounds you must be either on a ladder or moving along the ground AND
 	// You must be moving fast enough
@@ -563,7 +589,7 @@ void CBasePlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOri
 
 //	MoveHelper()->PlayerSetAnimation( PLAYER_WALK );
 
-	bWalking = speed < velrun;		
+	bWalking = speed < velrun;
 
 	VectorCopy( vecOrigin, knee );
 	VectorCopy( vecOrigin, feet );
@@ -656,8 +682,11 @@ void CBasePlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOri
 		fvol *= 0.65;
 	}
 
+	fvol *= 0.4; // standart source 2013 soundsystem sucks
 	PlayStepSound( feet, psurface, fvol, false );
 }
+
+ConVar sv_max_distance_transmit_footsteps( "sv_max_distance_transmit_footsteps", "1250.0", FCVAR_REPLICATED, "Maximum distance to transmit footstep sound effects." );
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -665,7 +694,7 @@ void CBasePlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOri
 //			fvol - 
 //			force - force sound to play
 //-----------------------------------------------------------------------------
-void CBasePlayer::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force )
+void CBasePlayer::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool bForce )
 {
 	if ( gpGlobals->maxClients > 1 && !sv_footsteps.GetFloat() )
 		return;
@@ -697,11 +726,27 @@ void CBasePlayer::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, flo
 	else
 	{
 		IPhysicsSurfaceProps *physprops = MoveHelper()->GetSurfaceProps();
-		const char *pSoundName = physprops->GetString( stepSoundName );
+		
+		// footstep sounds
+		const char *pRawSoundName = physprops->GetString( stepSoundName );
+		const char *pSoundName = NULL;
+		int const nStepCopyLen = V_strlen(pRawSoundName) + 4;
+		char *szStep = ( char * ) stackalloc( nStepCopyLen );
+		if ( GetTeamNumber() == TEAM_CT )
+		{
+			Q_snprintf(szStep, nStepCopyLen, "ct_%s", pRawSoundName);
+		}
+		else
+		{
+			Q_snprintf(szStep, nStepCopyLen, "t_%s", pRawSoundName);
+		}
 
-		// Give child classes an opportunity to override.
-		pSoundName = GetOverrideStepSound( pSoundName );
-
+		pSoundName = szStep;
+		if ( !CBaseEntity::GetParametersForSound( pSoundName, params, NULL ) )
+		{
+			DevMsg( "Can't find specific footstep sound! (%s) - Using the default instead. (%s)\n", pSoundName, pRawSoundName );
+			pSoundName = pRawSoundName;
+		}
 		if ( !CBaseEntity::GetParametersForSound( pSoundName, params, NULL ) )
 			return;
 
@@ -714,31 +759,66 @@ void CBasePlayer::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, flo
 	}
 
 	CRecipientFilter filter;
-	filter.AddRecipientsByPAS( vecOrigin );
+	
+#if defined( CLIENT_DLL )
+	// make sure we hear our own jump
+	filter.AddRecipient( this );
+	if ( prediction->InPrediction() && !bForce )
+	{
+		// Only use these rules when in prediction.
+		filter.UsePredictionRules();
+	}
+#endif
+
+	if( !bForce )
+	{
+		filter.AddRecipientsByPAS( vecOrigin );
+	}
 
 #ifndef CLIENT_DLL
 	// in MP, server removes all players in the vecOrigin's PVS, these players generate the footsteps client side
-	if ( gpGlobals->maxClients > 1 )
+	if ( gpGlobals->maxClients > 1 && !bForce )
 	{
 		filter.RemoveRecipientsByPVS( vecOrigin );
 	}
+	
+	if( bForce )
+	{
+		filter.AddAllPlayers();
+	}
+	// the client plays it's own sound
+	filter.RemoveRecipient( this );
+
+	// Don't transmit footsteps if they are outside maximum footstep transmission range.
+	for ( int i = 0; i < filter.GetRecipientCount(); ++i )
+	{
+		int entIndex = filter.GetRecipientIndex( i );
+		IHandleEntity* entity = gEntList.LookupEntityByNetworkIndex( entIndex );
+		if ( entity )
+		{
+			CBasePlayer* player = dynamic_cast<CBasePlayer*>( gEntList.GetBaseEntity( entity->GetRefEHandle() ) );
+			if ( player != NULL )
+			{
+				float dist = vecOrigin.DistTo( player->EyePosition() );
+				if ( dist > sv_max_distance_transmit_footsteps.GetFloat() )
+				{
+					filter.RemoveRecipient( player );
+				}
+			}
+		}
+	}
 #endif
+
+// #if defined( CLIENT_DLL )
+// 	Msg( "CLIENT_DLL: (PlayStepSound) filter recipients = %d\n", filter.GetRecipientCount() );
+// #else
+// 	Msg( "GAME_DLL: (PlayStepSound) filter recipients = %d\n", filter.GetRecipientCount() );
+// #endif
 
 	EmitSound_t ep;
 	ep.m_nChannel = CHAN_BODY;
 	ep.m_pSoundName = params.soundname;
-#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
-	if( TFGameRules()->IsMannVsMachineMode() )
-	{
-		ep.m_flVolume = params.volume;
-	}
-	else
-	{
-		ep.m_flVolume = fvol;
-	}
-#else
 	ep.m_flVolume = fvol;
-#endif
 	ep.m_SoundLevel = params.soundlevel;
 	ep.m_nFlags = 0;
 	ep.m_nPitch = params.pitch;
@@ -746,8 +826,21 @@ void CBasePlayer::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, flo
 
 	EmitSound( filter, entindex(), ep );
 
-	// Kyle says: ugggh. This function may as well be called "PerformPileOfDesperateGameSpecificFootstepHacks".
-	OnEmitFootstepSound( params, vecOrigin, fvol );
+	CSoundParameters paramsSuitSound;
+	if (!CBaseEntity::GetParametersForSound((GetTeamNumber() == TEAM_CT) ? "CT_Default.Suit" : "T_Default.Suit", paramsSuitSound, NULL))
+		return;
+
+	EmitSound_t epSuitSound;
+	epSuitSound.m_nChannel = CHAN_AUTO;
+	epSuitSound.m_pSoundName = paramsSuitSound.soundname;
+	epSuitSound.m_flVolume = fvol * 0.25; // standart source 2013 soundsystem sucks
+	epSuitSound.m_SoundLevel = paramsSuitSound.soundlevel;
+	epSuitSound.m_nFlags = 0;
+	epSuitSound.m_nPitch = paramsSuitSound.pitch;
+	epSuitSound.m_pOrigin = &vecOrigin;
+
+	EmitSound(filter, entindex(), epSuitSound);
+
 }
 
 void CBasePlayer::UpdateButtonState( int nUserCmdButtonMask )
@@ -1130,7 +1223,8 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 			float centerZ = CollisionProp()->WorldSpaceCenter().z;
 			delta.z = IntervalDistance( tr.endpos.z, centerZ + CollisionProp()->OBBMins().z, centerZ + CollisionProp()->OBBMaxs().z );
 			float dist = delta.Length();
-			if ( dist < PLAYER_USE_RADIUS )
+			CCSPlayer *pPlayer = dynamic_cast<CCSPlayer*>( pObject );
+			if ( (pPlayer && pPlayer->IsBot() && dist < PLAYER_USE_BOT_RADIUS) || dist < PLAYER_USE_RADIUS )
 			{
 #ifndef CLIENT_DLL
 
@@ -1360,6 +1454,145 @@ void CBasePlayer::PlayerUse ( void )
 	}
 
 	CBaseEntity *pUseEntity = FindUseEntity();
+
+#if defined( CSTRIKE_DLL )
+	// in counterstrike, we need to allow the buy menu to open more easily
+	// The old code defaulted to using whatever you were pointing at.
+	// This code first checks to see if you're in a buy zone.  If that's true, 
+	// then it ignores any weapon you may be pointing at. (the planted c4 is
+	// not a weapon).
+
+	if ( m_afButtonPressed & IN_USE )
+	{
+		CCSPlayer* pPlayer = ToCSPlayer( this );
+		CWeaponCSBase *pWeapon = dynamic_cast<CWeaponCSBase*>(pUseEntity);
+		CSWeaponType nWepType = WEAPONTYPE_UNKNOWN;
+		if ( pWeapon )
+			nWepType = pWeapon->GetWeaponType();
+
+		bool bOpenBuyWithUse = true;
+		if ( pPlayer )
+		{
+			const char *cl_useopensbuymenu = engine->GetClientConVarValue( ENTINDEX( pPlayer->edict() ), "cl_use_opens_buy_menu" );
+			if ( cl_useopensbuymenu && atoi( cl_useopensbuymenu ) <= 0 )
+				bOpenBuyWithUse = false;
+		}
+
+		if ( pWeapon && (pWeapon->IsKindOf( WEAPONTYPE_PISTOL ) || pWeapon->IsKindOf( WEAPONTYPE_SUBMACHINEGUN ) || pWeapon->IsKindOf( WEAPONTYPE_RIFLE ) ||
+						pWeapon->IsKindOf( WEAPONTYPE_SHOTGUN ) || pWeapon->IsKindOf( WEAPONTYPE_SNIPER_RIFLE ) || pWeapon->IsKindOf( WEAPONTYPE_MACHINEGUN )) )
+		{
+			bool bPickupIsSecondary = pWeapon->IsKindOf( WEAPONTYPE_PISTOL );
+			CBaseCombatWeapon *pPlayerWeapon = NULL;
+
+			if ( !bPickupIsSecondary )
+			{
+				pPlayerWeapon = pPlayer->Weapon_GetSlot( WEAPON_SLOT_RIFLE );
+			}
+			else
+			{
+				pPlayerWeapon = pPlayer->Weapon_GetSlot( WEAPON_SLOT_PISTOL );
+			}
+
+			// if the player has a weapon in the slot that occupies the weapon that they'd like to pick up
+			// AND they are able to drop it, pick up the new weapon
+			// OR if they don't have a weapon in that slot, go ahead and pick up the new weapon
+			if ( (pPlayerWeapon && pPlayer->CSWeaponDrop( pPlayerWeapon, true )) || !pPlayerWeapon )
+			{
+				pWeapon->Touch( this );
+
+				if ( pWeapon->IsPrimaryWeapon() )
+				{
+					// change the weapon to a picked up one if it's primary
+					pPlayer->Weapon_Switch( pWeapon, 0 );
+				}
+			}
+		}
+		else if ( pPlayer && bOpenBuyWithUse && pPlayer->IsInBuyZone() && pPlayer->CanPlayerBuy( false ) )
+		{
+			bool bItemIsNullOrWeapon = true;
+
+			if ( pUseEntity )
+			{
+				bItemIsNullOrWeapon = (pWeapon != 0);
+			}
+
+			if ( bItemIsNullOrWeapon )
+			{
+				engine->ClientCommand( edict(), "buymenu\n" );
+				return;
+			}
+		}
+		else if ( !pUseEntity && pPlayer && pPlayer->HasC4() && pPlayer->GetActiveCSWeapon() )
+		{
+			if ( pPlayer->m_bInBombZone && !(pPlayer->GetActiveCSWeapon()->IsA( WEAPON_C4 )) )
+			{
+				// we're in a bomb zone with C4, but it's not equipped.  Equip it.
+				CWeaponCSBase	*pC4Weapon = NULL;
+
+				//Search for the c4 weapon to use
+				for ( int i = 0; i < pPlayer->WeaponCount(); i++ )
+				{
+					CBaseCombatWeapon* pWeaponBase = pPlayer->GetWeapon( i );
+					CWeaponCSBase* pWeapon = dynamic_cast< CWeaponCSBase* > (pWeaponBase);
+
+					if ( pWeapon == NULL )
+					{
+						continue;
+					}
+
+
+					if ( !pWeapon->IsA( WEAPON_C4 ) )
+					{
+						continue;
+					}
+
+					// Must be eligible for switching to.
+					if ( !pPlayer->Weapon_CanSwitchTo( pWeapon ) )
+					{
+						continue;
+					}
+
+					pC4Weapon = pWeapon;
+				}
+
+				if ( pC4Weapon != NULL )
+				{
+					//pPlayer->SetLastWeaponBeforeAutoSwitchToC4( pPlayer->GetActiveCSWeapon() );
+					pPlayer->Weapon_Switch( pC4Weapon, 0 );
+
+					static_cast<CC4*>(pC4Weapon)->m_bIsPlantingViaUse = true;
+				}
+			}
+			else if ( pPlayer->GetActiveCSWeapon()->IsA( WEAPON_C4 ) )
+			{
+				static_cast<CC4*>(pPlayer->GetActiveWeapon())->m_bIsPlantingViaUse = true;
+			}
+		}
+		else if ( pUseEntity && pUseEntity->IsPlayer() )
+		{
+			// Bots can give their C4 to the requesting human.
+
+			CCSPlayer* pPlayer = ToCSPlayer( this );
+			CCSPlayer* pBot = ToCSPlayer( pUseEntity );
+
+			if ( pPlayer && pPlayer->IsAlive() && pBot && pBot->IsBot() && (pBot->GetTeamNumber() == pPlayer->GetTeamNumber()) && pBot->HasC4() )
+			{
+				//distance check is implicit in +use, but check it anyway
+				if ( (pBot->WorldSpaceCenter() - pPlayer->WorldSpaceCenter()).Length() < 200 )
+				{
+					CBaseCombatWeapon *pC4 = pBot->Weapon_OwnsThisType( "weapon_c4" );
+					if ( pC4 )
+					{
+						pBot->CSWeaponDrop( pC4, WorldSpaceCenter(), false );
+						pBot->Radio( "Radio.YouTakeThePoint", "#Cstrike_TitlesTXT_Game_afk_bomb_drop" );
+					}
+				}
+
+			}
+		}
+	}
+
+#endif
 
 	// Found an object
 	if ( pUseEntity )
@@ -1616,6 +1849,8 @@ void CBasePlayer::CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& f
 
 	CalcViewRoll( eyeAngles );
 
+	CalcAddViewmodelCameraAnimation( eyeOrigin, eyeAngles );
+
 	// Apply punch angle
 	VectorAdd( eyeAngles, m_Local.m_vecPunchAngle, eyeAngles );
 
@@ -1671,6 +1906,8 @@ void CBasePlayer::CalcVehicleView(
 	Vector vecBaseEyePosition = eyeOrigin;
 
 	CalcViewRoll( eyeAngles );
+
+	CalcAddViewmodelCameraAnimation( eyeOrigin, eyeAngles );
 
 	// Apply punch angle
 	VectorAdd( eyeAngles, m_Local.m_vecPunchAngle, eyeAngles );
@@ -1757,6 +1994,33 @@ float CBasePlayer::CalcRoll (const QAngle& angles, const Vector& velocity, float
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Allow the viewmodel to layer in artist-authored additive camera animation (to make some first-person anims 'punchier')
+//-----------------------------------------------------------------------------
+#define CAM_DRIVER_RETURN_TO_NORMAL 0.25f
+#define CAM_DRIVER_RETURN_TO_NORMAL_GAIN 0.8f
+void CBasePlayer::CalcAddViewmodelCameraAnimation( Vector& eyeOrigin, QAngle& eyeAngles )
+{
+#ifdef CLIENT_DLL
+	CBaseViewModel *vm = GetViewModel();
+	if ( vm && vm->GetModelPtr() )
+	{
+		float flTimeDelta = clamp( (gpGlobals->curtime - vm->m_flCamDriverAppliedTime), 0, CAM_DRIVER_RETURN_TO_NORMAL );
+		if ( flTimeDelta < CAM_DRIVER_RETURN_TO_NORMAL )
+		{
+			vm->m_flCamDriverWeight = clamp( Gain( RemapValClamped( flTimeDelta, 0.0f, CAM_DRIVER_RETURN_TO_NORMAL, 1.0f, 0.0f ), CAM_DRIVER_RETURN_TO_NORMAL_GAIN ), 0, 1 );
+
+			//eyeOrigin += (vm->m_vecCamDriverLastPos * vm->m_flCamDriverWeight);
+			eyeAngles += (vm->m_angCamDriverLastAng * vm->m_flCamDriverWeight);
+		}
+		else
+		{
+			vm->m_flCamDriverWeight = 0;
+		}
+	}
+#endif
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Determine view roll, including data kick
 //-----------------------------------------------------------------------------
 void CBasePlayer::CalcViewRoll( QAngle& eyeAngles )
@@ -1766,6 +2030,84 @@ void CBasePlayer::CalcViewRoll( QAngle& eyeAngles )
 
 	float side = CalcRoll( GetAbsAngles(), GetAbsVelocity(), sv_rollangle.GetFloat(), sv_rollspeed.GetFloat() );
 	eyeAngles[ROLL] += side;
+}
+
+#if defined( CLIENT_DLL )
+extern ConVar cl_use_new_headbob;
+//ConVar cl_headbob_freq( "cl_headbob_freq", "12", FCVAR_CLIENTDLL );
+//ConVar cl_headbob_amp("cl_headbob_amp", "1.5", FCVAR_CLIENTDLL );
+ConVar cl_headbob_land_dip_amt( "cl_headbob_land_dip_amt", "4", FCVAR_CLIENTDLL );
+#endif 
+
+void CBasePlayer::CalcViewBob( Vector& eyeOrigin )
+{
+#if defined( CLIENT_DLL )
+	if ( cl_use_new_headbob.GetBool() == false )
+		return;
+
+	Vector vecBaseEyePosition = eyeOrigin;
+
+	// if we just landed, dip the player's view
+	float flOldFallVel = m_Local.m_flOldFallVelocity;
+	float flFallVel = m_Local.m_flFallVelocity;
+	//Msg("Fall Velocity: %f\n", flFallVel );
+
+	if ( flFallVel <= 0.1f && flOldFallVel > 10.0f && flOldFallVel <= PLAYER_FATAL_FALL_SPEED && m_Local.m_bInLanding == false )
+	{
+		m_Local.m_bInLanding = true;
+		m_Local.m_flLandingTime = gpGlobals->curtime;
+	}
+
+	// don't bob the view right now
+	/*
+	const float flMaxSpeed = sv_maxspeed.GetFloat();
+	float flSpeedFactor;
+	*/
+
+	if ( m_Local.m_bInLanding == true )
+	{
+		float landseconds = MAX( gpGlobals->curtime - m_Local.m_flLandingTime, 0.0f );
+		float landFraction = SimpleSpline( landseconds / 0.25f );
+		clamp( landFraction, 0.0f, 1.0f );
+
+		float flDipAmount = (1 / flOldFallVel) * 0.1f;
+
+		int dipHighOffset = 64;
+		int dipLowOffset = dipHighOffset - cl_headbob_land_dip_amt.GetInt();
+		Vector temp = GetViewOffset();
+		temp.z = ((dipLowOffset - flDipAmount) * landFraction) +
+			(dipHighOffset * (1 - landFraction));
+
+		if ( temp.z > dipHighOffset )
+		{
+			temp.z = dipHighOffset;
+			m_Local.m_bInLanding = false;
+		}
+		eyeOrigin.z -= (dipHighOffset - temp.z);
+		//SetViewOffset( temp );
+	}
+	else
+	{
+		// don't bob the view right now
+		/*
+		flSpeedFactor = GetAbsVelocity().Length() / flMaxSpeed;
+		clamp( flSpeedFactor, 0.0f, 1.0f );
+		eyeOrigin.z += flSpeedFactor * (sin(gpGlobals->curtime * cl_headbob_freq.GetFloat() ) * cl_headbob_amp.GetFloat());
+		*/
+	}
+
+	// stop when our eyes get back to default
+	if ( m_Local.m_bInLanding == true && ((eyeOrigin.z - 0.001f) >= vecBaseEyePosition.z) )
+	{
+		m_Local.m_bInLanding = false;
+	}
+
+	if ( m_Local.m_bInLanding == false )
+	{
+		// Set the old velocity to the new velocity, we check next frame to see if we hit the ground
+		m_Local.m_flOldFallVelocity = m_Local.m_flFallVelocity;
+	}
+#endif
 }
 
 

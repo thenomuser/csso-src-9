@@ -311,6 +311,7 @@ public:
 	Place GetPlace( void ) const		{ return m_place; }		// get place descriptor
 
 	void MarkAsBlocked( int teamID, CBaseEntity *blocker, bool bGenerateEvent = true );	// An entity can force a nav area to be blocked
+	void MarkAsUnblocked( int teamID, bool bGenerateEvent = true );	// An entity can force a nav area to be blocked
 	virtual void UpdateBlocked( bool force = false, int teamID = TEAM_ANY );		// Updates the (un)blocked status of the nav area (throttled)
 	virtual bool IsBlocked( int teamID, bool ignoreNavBlockers = false ) const;
 	void UnblockArea( int teamID = TEAM_ANY );					// clear blocked status for the given team(s)

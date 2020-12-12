@@ -153,6 +153,7 @@ typedef enum
 	VOTE_FAILED_CANNOT_KICK_DURING_ROUND,
 	VOTE_FAILED_VOTE_IN_PROGRESS,
 	VOTE_FAILED_KICK_LIMIT_REACHED,
+	VOTE_FAILED_KICK_DENIED_BY_GC,
 
 	// TF-specific?
 	VOTE_FAILED_MODIFICATION_ALREADY_ACTIVE,
@@ -180,6 +181,12 @@ enum CastVote
 	VOTE_OPTION4,
 	VOTE_OPTION5,
 	VOTE_UNCAST
+};
+
+enum AmmoPosition_t
+{
+	AMMO_POSITION_PRIMARY = 1,
+	AMMO_POSITION_SECONDARY = 2
 };
 
 //===================================================================================================================
@@ -283,7 +290,7 @@ enum CastVote
 
 // Humans only have left and right hands, though we might have aliens with more
 //  than two, sigh
-#define MAX_VIEWMODELS			2
+#define MAX_VIEWMODELS			3
 
 #define MAX_BEAM_ENTS			10
 
@@ -448,6 +455,17 @@ enum PLAYER_ANIM
 #define DAMAGE_EVENTS_ONLY		1		// Call damage functions, but don't modify health
 #define	DAMAGE_YES				2
 #define	DAMAGE_AIM				3
+
+enum RelativeDamagedDirection_t
+{
+	DAMAGED_DIR_NONE = 0,
+	DAMAGED_DIR_FRONT,
+	DAMAGED_DIR_BACK,
+	DAMAGED_DIR_LEFT,
+	DAMAGED_DIR_RIGHT,
+
+	DAMAGED_DIR_TOTAL
+};
 
 // Spectator Movement modes
 enum {

@@ -148,7 +148,8 @@ CSpectatorMenu::CSpectatorMenu( IViewPort *pViewPort ) : Frame( NULL, PANEL_SPEC
 	menu->LoadFromFile("Resource/spectatormodes.res");
 	m_pViewOptions->SetMenu( menu );	// attach menu to combo box
 
-	LoadControlSettings("Resource/UI/BottomSpectator.res");
+	LoadControlSettings( "Resource/UI/BottomSpectator.res" );
+
 	ListenForGameEvent( "spec_target_updated" );
 }
 
@@ -252,8 +253,8 @@ void CSpectatorMenu::FireGameEvent( IGameEvent * event )
 		{
 			for ( int i=0; i<m_pPlayerList->GetItemCount(); ++i )
 			{
-				KeyValues *kv = m_pPlayerList->GetItemUserData( i );
-				if ( kv && FStrEq( kv->GetString( "player" ), selectedPlayerName ) )
+				KeyValues *pKv = m_pPlayerList->GetItemUserData( i );
+				if ( pKv && FStrEq( pKv->GetString( "player" ), selectedPlayerName ) )
 				{
 					m_pPlayerList->ActivateItemByRow( i );
 					break;
@@ -295,11 +296,11 @@ void CSpectatorMenu::ShowPanel(bool bShow)
 
 	bool bIsEnabled = true;
 	
-	 if ( engine->IsHLTV() && HLTVCamera()->IsPVSLocked() )
+	if ( engine->IsHLTV() && HLTVCamera()->IsPVSLocked() )
 	{
 		 // when watching HLTV or Replay with a locked PVS, some elements are disabled
 		 bIsEnabled = false;
-	 }
+	}
 	
 	m_pLeftButton->SetVisible( bIsEnabled );
 	m_pRightButton->SetVisible( bIsEnabled );
@@ -580,9 +581,12 @@ void CSpectatorGUI::ShowPanel(bool bShow)
 {
 	if ( bShow && !IsVisible() )
 	{
+		InvalidateLayout( true, true );
 		m_bSpecScoreboard = false;
 	}
+
 	SetVisible( bShow );
+
 	if ( !bShow && m_bSpecScoreboard )
 	{
 		gViewPortInterface->ShowPanel( PANEL_SCOREBOARD, false );
@@ -728,6 +732,7 @@ static void ForwardSpecCmdToServer( const CCommand &args )
 	else if ( args.ArgC() == 2 )
 	{
 		// forward the command with parameter
+		// XXX(JohnS): Whyyyyy
 		char command[128];
 		Q_snprintf( command, sizeof(command), "%s \"%s\"", args[ 0 ], args[ 1 ] );
 		engine->ServerCmd( command );

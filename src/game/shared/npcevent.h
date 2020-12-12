@@ -11,6 +11,8 @@
 #pragma once
 #endif
 
+#include "eventlist.h"
+
 class CBaseAnimating;
 
 struct animevent_t

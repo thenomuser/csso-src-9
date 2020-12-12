@@ -444,6 +444,7 @@ void S_FreeChannel(channel_t *ch)
 	Q_memset(ch, 0, sizeof(channel_t));
 }
 
+
 // Mix all channels into active paintbuffers until paintbuffer is full or 'endtime' is reached.
 // endtime: time in 44khz samples to mix
 // rate: ignore samples which are not natively at this rate (for multipass mixing/filtering)
@@ -474,7 +475,6 @@ void MIX_MixChannelsToPaintbuffer( CChannelList &list, int endtime, int flags, i
 	// Apply a global pitch shift if we're playing back a time-scaled replay
 	float flGlobalPitchScale = 1.0f;
 
-	// Apply a global pitch shift if we're playing back a time-scaled replay
 #if defined( REPLAY_ENABLED )
 	extern IDemoPlayer *g_pReplayDemoPlayer;
 	if ( demoplayer->IsPlayingBack() && demoplayer == g_pReplayDemoPlayer )

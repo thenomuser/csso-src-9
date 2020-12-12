@@ -30,6 +30,7 @@ string_t MakeButtonSound( int sound );				// get string of button sound number
 #define SF_BUTTON_LOCKED				2048	// Whether the button is initially locked.
 #define	SF_BUTTON_SPARK_IF_OFF			4096	// button sparks in OFF state
 #define	SF_BUTTON_JIGGLE_ON_USE_LOCKED	8192	// whether to jiggle if someone uses us when we're locked
+#define SF_BUTTON_NOTSOLID				16384
 
 BEGIN_DATADESC( CBaseButton )
 
@@ -385,7 +386,18 @@ void CBaseButton::Spawn( )
 	AngleVectors( angMoveDir, &m_vecMoveDir );
 
 	SetMoveType( MOVETYPE_PUSH );
-	SetSolid( SOLID_BSP );
+
+	if ( HasSpawnFlags( SF_BUTTON_NOTSOLID ) )
+	{
+		SetSolid( SOLID_NONE );
+		AddEFlags( EFL_USE_PARTITION_WHEN_NOT_SOLID );
+		AddSolidFlags( FSOLID_NOT_SOLID );
+	}
+	else
+	{
+		SetSolid( SOLID_BSP );
+	}
+
 	SetModel( STRING( GetModelName() ) );
 	
 	if (m_flSpeed == 0)

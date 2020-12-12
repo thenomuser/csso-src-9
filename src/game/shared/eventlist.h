@@ -77,6 +77,9 @@ typedef enum
 	AE_CL_BODYGROUP_SET_VALUE,
 	AE_CL_BODYGROUP_SET_VALUE_CMODEL_WPN,
 
+	AE_CL_BODYGROUP_SET_TO_CLIP,	// Updates the value of bodygroup 1 to the number of bullets in m_iClip1
+	AE_CL_BODYGROUP_SET_TO_NEXTCLIP,	// Updates the value of bodygroup 1 to the number of bullets that can be reloaded next
+
 	AE_WPN_PRIMARYATTACK,	// Used by weapons that want their primary attack to occur during an attack anim (i.e. grenade throwing)
 	AE_WPN_INCREMENTAMMO,
 
@@ -89,6 +92,24 @@ typedef enum
 
 	AE_TAUNT_ENABLE_MOVE,
 	AE_TAUNT_DISABLE_MOVE,
+
+	AE_WPN_COMPLETE_RELOAD,
+	AE_CL_ATTACH_SILENCER_COMPLETE,
+	AE_CL_DETACH_SILENCER_COMPLETE,
+	AE_CL_SHOW_SILENCER,
+	AE_CL_HIDE_SILENCER,
+
+	AE_CL_EJECT_MAG, // Create a physical magazine to drop in the world and hide the fake-animated one
+	AE_CL_EJECT_MAG_UNHIDE, //Unhide the non-physical mag that AE_CL_EJECT_MAG hid
+
+	AE_WPN_CZ_DUMP_CURRENT_MAG,
+	AE_WPN_CZ_UPDATE_BODYGROUP,
+
+	AE_WPN_CLIP_TO_POSEPARAM,
+	AE_WPN_NEXTCLIP_TO_POSEPARAM,
+	AE_WPN_EMPTYSHOTS_TO_POSEPARAM,
+
+	AE_BEGIN_TAUNT_LOOP,
 
 	LAST_SHARED_ANIMEVENT,
 } Animevent;

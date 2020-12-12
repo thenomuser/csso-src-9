@@ -82,14 +82,24 @@ int GetLocalPlayerIndex( void )
 		return 0;	// game not started yet
 }
 
+// NOTE: cache these because this gets executed hundreds of times per frame
+static int g_nLocalPlayerVisionFlagsWeaponsCheck = 0;
+static int g_nLocalPlayerVisionFlags = 0;
 int GetLocalPlayerVisionFilterFlags( bool bWeaponsCheck /*= false */ )
 {
-	C_BasePlayer * player = C_BasePlayer::GetLocalPlayer();
+	return bWeaponsCheck ? g_nLocalPlayerVisionFlagsWeaponsCheck : g_nLocalPlayerVisionFlags;
+}
 
-	if ( player )
-		return player->GetVisionFilterFlags( bWeaponsCheck );
-	else
-		return 0;
+void UpdateLocalPlayerVisionFlags()
+{
+	g_nLocalPlayerVisionFlagsWeaponsCheck = 0;
+	g_nLocalPlayerVisionFlags = 0;
+	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+	if ( pPlayer )
+	{
+		g_nLocalPlayerVisionFlagsWeaponsCheck = pPlayer->GetVisionFilterFlags( true );
+		g_nLocalPlayerVisionFlags = pPlayer->GetVisionFilterFlags( false );
+	}
 }
 
 bool IsLocalPlayerUsingVisionFilterFlags( int nFlags, bool bWeaponsCheck /* = false */ )
@@ -663,7 +673,7 @@ IterationRetval_t CFlaggedEntitiesEnum::EnumElement( IHandleEntity *pHandleEntit
 int UTIL_EntitiesInBox( C_BaseEntity **pList, int listMax, const Vector &mins, const Vector &maxs, int flagMask, int partitionMask )
 {
 	CFlaggedEntitiesEnum boxEnum( pList, listMax, flagMask );
-	partition->EnumerateElementsInBox( partitionMask, mins, maxs, false, &boxEnum );
+	::partition->EnumerateElementsInBox( partitionMask, mins, maxs, false, &boxEnum );
 	
 	return boxEnum.GetCount();
 
@@ -681,7 +691,7 @@ int UTIL_EntitiesInBox( C_BaseEntity **pList, int listMax, const Vector &mins, c
 int UTIL_EntitiesInSphere( C_BaseEntity **pList, int listMax, const Vector &center, float radius, int flagMask, int partitionMask )
 {
 	CFlaggedEntitiesEnum sphereEnum( pList, listMax, flagMask );
-	partition->EnumerateElementsInSphere( partitionMask, center, radius, false, &sphereEnum );
+	::partition->EnumerateElementsInSphere( partitionMask, center, radius, false, &sphereEnum );
 
 	return sphereEnum.GetCount();
 
@@ -698,7 +708,7 @@ int UTIL_EntitiesInSphere( C_BaseEntity **pList, int listMax, const Vector &cent
 int UTIL_EntitiesAlongRay( C_BaseEntity **pList, int listMax, const Ray_t &ray, int flagMask, int partitionMask )
 {
 	CFlaggedEntitiesEnum rayEnum( pList, listMax, flagMask );
-	partition->EnumerateElementsAlongRay( partitionMask, ray, false, &rayEnum );
+	::partition->EnumerateElementsAlongRay( partitionMask, ray, false, &rayEnum );
 
 	return rayEnum.GetCount();
 }
@@ -1318,4 +1328,12 @@ bool UTIL_HasLoadedAnyMap()
 		return false;
 
 	return g_pFullFileSystem->FileExists( szFilename, "MOD" );
+}
+
+void UTIL_ClearTrace( trace_t &trace )
+{
+	memset( &trace, 0, sizeof( trace ) );
+	trace.fraction = 1.f;
+	trace.fractionleftsolid = 0;
+	trace.surface = g_NullSurface;
 }

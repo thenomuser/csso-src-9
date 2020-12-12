@@ -147,6 +147,7 @@ public:
 	virtual void UpdateIKLocks( float currentTime );
 	virtual void CalculateIKLocks( float currentTime );
 	virtual bool ShouldDraw();
+	virtual void UpdateVisibility() OVERRIDE;
 	virtual int DrawModel( int flags );
 	virtual int	InternalDrawModel( int flags );
 	virtual bool OnInternalDrawModel( ClientModelRenderInfo_t *pInfo );
@@ -185,8 +186,6 @@ public:
 	void MaintainSequenceTransitions( IBoneSetup &boneSetup, float flCycle, Vector pos[], Quaternion q[] );
 	virtual void AccumulateLayers( IBoneSetup &boneSetup, Vector pos[], Quaternion q[], float currentTime );
 
-	virtual void ChildLayerBlend( Vector pos[], Quaternion q[], float currentTime, int boneMask );
-
 	// Attachments
 	int		LookupAttachment( const char *pAttachmentName );
 	int		LookupRandomAttachment( const char *pAttachmentNameSubstring );
@@ -207,16 +206,8 @@ public:
 	void	GetBonePosition( int iBone, Vector &origin, QAngle &angles );
 	void	GetBoneTransform( int iBone, matrix3x4_t &pBoneToWorld );
 
-	//=============================================================================
-	// HPE_BEGIN:
 	// [menglish] Finds the bone associated with the given hitbox
-	//=============================================================================
-
 	int		GetHitboxBone( int hitboxIndex );
-
-	//=============================================================================
-	// HPE_END
-	//=============================================================================
 
 	// Bone attachments
 	virtual void		AttachEntityToBone( C_BaseAnimating* attachTarget, int boneIndexAttached=-1, Vector bonePosition=Vector(0,0,0), QAngle boneAngles=QAngle(0,0,0) );
@@ -229,6 +220,8 @@ public:
 	C_BaseAnimating*	GetBoneAttachment( int i );
 	virtual void		NotifyBoneAttached( C_BaseAnimating* attachTarget );
 	virtual void		UpdateBoneAttachments( void );
+
+	virtual void		PostBuildTransformations( CStudioHdr *pStudioHdr, Vector *pos, Quaternion q[] ) {}
 
 	//bool solveIK(float a, float b, const Vector &Foot, const Vector &Knee1, Vector &Knee2);
 	//void DebugIK( mstudioikchain_t *pikchain );
@@ -273,6 +266,8 @@ public:
 	bool							GetAttachmentLocal( int iAttachment, matrix3x4_t &attachmentToLocal );
 	bool							GetAttachmentLocal( int iAttachment, Vector &origin, QAngle &angles );
 	bool                            GetAttachmentLocal( int iAttachment, Vector &origin );
+
+	virtual C_BaseAnimating *		GetBoneSetupDependancy( void ) { return GetMoveParent() ? GetMoveParent()->GetBaseAnimating() : NULL; }
 
 	bool							GetRootBone( matrix3x4_t &rootBone );
 
@@ -355,7 +350,6 @@ public:
 	int GetBodygroupCount( int iGroup );
 	int GetNumBodyGroups( void );
 
-	class CBoneCache				*GetBoneCache( CStudioHdr *pStudioHdr );
 	void							SetHitboxSet( int setnum );
 	void							SetHitboxSetByName( const char *setname );
 	int								GetHitboxSet( void );
@@ -402,6 +396,7 @@ public:
 	static void						ThreadedBoneSetup();
 	static void						InitBoneSetupThreadPool();
 	static void						ShutdownBoneSetupThreadPool();
+	void							MarkForThreadedBoneSetup();
 
 	// Invalidate bone caches so all SetupBones() calls force bone transforms to be regenerated.
 	static void						InvalidateBoneCaches();
@@ -445,6 +440,7 @@ public:
 	virtual bool					ShouldResetSequenceOnNewModel( void );
 
 	virtual bool					IsViewModel() const;
+	virtual bool					ShouldFlipModel( void ) { return false; }
 	virtual void					UpdateOnRemove( void );
 
 protected:
@@ -512,6 +508,7 @@ protected:
 	// bone transformation matrix
 	unsigned long					m_iMostRecentModelBoneCounter;
 	unsigned long					m_iMostRecentBoneSetupRequest;
+	C_BaseAnimating *				m_pNextForThreadedBoneSetup;
 	int								m_iPrevBoneMask;
 	int								m_iAccumulatedBoneMask;
 
@@ -617,6 +614,7 @@ private:
 	unsigned char m_nOldMuzzleFlashParity;
 
 	bool							m_bInitModelEffects;
+	bool							m_bDelayInitModelEffects;
 
 	// Dynamic models
 	bool							m_bDynamicModelAllowed;
@@ -635,6 +633,7 @@ private:
 	mutable CStudioHdr				*m_pStudioHdr;
 	mutable MDLHandle_t				m_hStudioHdr;
 	CThreadFastMutex				m_StudioHdrInitLock;
+	bool							m_bHasAttachedParticles;
 };
 
 enum 

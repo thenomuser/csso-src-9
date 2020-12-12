@@ -82,7 +82,6 @@
 #include "iachievementmgr.h"
 #include "profile.h"
 #include "cl_steamauth.h"
-#include "sv_steamauth.h"
 #include "download.h"
 #include "replay/iclientreplay.h"
 #include "demofile.h"
@@ -366,7 +365,6 @@ public:
 	float GetSentenceLength( CAudioSource *pAudioSource );
 	bool IsStreaming( CAudioSource *pAudioSource ) const;
 	void AddPhonemeFile( const char *pszPhonemeFile );
-	const char *GetConnectedIP( void );
 
 	// FIXME, move entirely to client .dll
 	void GetViewAngles( QAngle& va );
@@ -803,22 +801,6 @@ void AddPhonemesFromFile( const char *pszFileName );
 void CEngineClient::AddPhonemeFile( const char *pszPhonemeFile )
 {
 	AddPhonemesFromFile( pszPhonemeFile );
-}
-
-const char *CEngineClient::GetConnectedIP( void )
-{
-	if ( !Steam3Server().BLanOnly() )
-	{
-		uint32 unPublicIP = Steam3Server().GetPublicIP();
-		if ( unPublicIP != 0 )
-		{
-			netadr_t addr;
-			addr.SetIP( unPublicIP );
-			return addr.ToString( true );
-		}
-	}
-
-	return "LAN";
 }
 
 float CEngineClient::GetSentenceLength( CAudioSource *pAudioSource )
@@ -1774,8 +1756,9 @@ bool ClientDLL_Load()
 	else
 	{	
 		// tell Steam to do a quick verify of the install. Sys_Error doesn't return, so do this first.
-//		if( Steam3Client().SteamApps() )
-//			Steam3Client().SteamApps()->MarkContentCorrupt( true );
+		// PiMoN: NO PLEASE DONT
+		//if( Steam3Client().SteamApps() )
+		//	Steam3Client().SteamApps()->MarkContentCorrupt( true );
 
 		// library failed to load
 		Sys_Error( "Could not load library client. Try restarting. If that doesn't work, verify the cache." );

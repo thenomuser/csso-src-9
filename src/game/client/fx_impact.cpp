@@ -79,7 +79,7 @@ bool FX_AffectRagdolls( Vector vecOrigin, Vector vecStart, int iDamageType )
 	shotRay.Init( vecStart, vecOrigin );
 
 	CRagdollEnumerator ragdollEnum( shotRay, iDamageType );
-	partition->EnumerateElementsAlongRay( PARTITION_CLIENT_RESPONSIVE_EDICTS, shotRay, false, &ragdollEnum );
+	::partition->EnumerateElementsAlongRay( PARTITION_CLIENT_RESPONSIVE_EDICTS, shotRay, false, &ragdollEnum );
 
 	return ragdollEnum.Hit();
 }
@@ -370,6 +370,9 @@ void PlayImpactSound( CBaseEntity *pEntity, trace_t &tr, Vector &vecServerOrigin
 	VPROF( "PlayImpactSound" );
 	surfacedata_t *pdata;
 	Vector vecOrigin;
+
+	if ( pEntity->IsDormant() )
+		return;
 
 	// If the client-side trace hit a different entity than the server, or
 	// the server didn't specify a surfaceprop, then use the client-side trace 

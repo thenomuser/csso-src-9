@@ -86,7 +86,7 @@ void CHudHistoryResource::SetHistoryGap( int iNewHistoryGap )
 // Purpose: adds an element to the history
 //-----------------------------------------------------------------------------
 void CHudHistoryResource::AddToHistory( C_BaseCombatWeapon *weapon )
-{
+{/*
 	// don't draw exhaustable weapons (grenades) since they'll have an ammo pickup icon as well
  	if ( weapon->GetWpnData().iFlags & ITEM_FLAG_EXHAUSTIBLE )
  		return;
@@ -103,14 +103,14 @@ void CHudHistoryResource::AddToHistory( C_BaseCombatWeapon *weapon )
 		}
 	}
 	
-	AddIconToHistory( HISTSLOT_WEAP, iId, weapon, 0, NULL );
+	AddIconToHistory( HISTSLOT_WEAP, iId, weapon, 0, NULL );*/
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Add a new entry to the pickup history
 //-----------------------------------------------------------------------------
 void CHudHistoryResource::AddToHistory( int iType, int iId, int iCount )
-{
+{/*
 	// Ignore adds with no count
 	if ( iType == HISTSLOT_AMMO )
 	{
@@ -141,14 +141,14 @@ void CHudHistoryResource::AddToHistory( int iType, int iId, int iCount )
 		}
 	}
 
-	AddIconToHistory( iType, iId, NULL, iCount, NULL );
+	AddIconToHistory( iType, iId, NULL, iCount, NULL );*/
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Add a new entry to the pickup history
 //-----------------------------------------------------------------------------
 void CHudHistoryResource::AddToHistory( int iType, const char *szName, int iCount )
-{
+{/*
 	if ( iType != HISTSLOT_ITEM )
 		return;
 
@@ -157,14 +157,14 @@ void CHudHistoryResource::AddToHistory( int iType, const char *szName, int iCoun
 	if ( i == NULL )
 		return;  
 
-	AddIconToHistory( iType, 1, NULL, iCount, i );
+	AddIconToHistory( iType, 1, NULL, iCount, i );*/
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: adds a history icon
 //-----------------------------------------------------------------------------
 void CHudHistoryResource::AddIconToHistory( int iType, int iId, C_BaseCombatWeapon *weapon, int iCount, CHudTexture *icon )
-{
+{/*
 	m_bNeedsDraw = true;
 
 	// Check to see if the pic would have to be drawn too high. If so, start again from the bottom
@@ -206,7 +206,7 @@ void CHudHistoryResource::AddIconToHistory( int iType, int iId, C_BaseCombatWeap
 		freeslot->DisplayTime = gpGlobals->curtime + hud_drawhistory_time.GetFloat();
 	}
 
-	++m_iCurrentHistorySlot;
+	++m_iCurrentHistorySlot;*/
 }
 
 

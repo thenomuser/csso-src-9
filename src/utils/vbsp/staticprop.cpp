@@ -167,7 +167,7 @@ bool LoadStudioModel( char const* pModelName, char const* pEntityType, CUtlBuffe
 		return false;
 	}
 
-	isstaticprop_ret isStaticProp = IsStaticProp(pHdr);
+	/*isstaticprop_ret isStaticProp = IsStaticProp(pHdr);
 	if ( isStaticProp != RET_VALID )
 	{
 		if ( isStaticProp == RET_FAIL_NOT_MARKED_STATIC_PROP )
@@ -180,7 +180,7 @@ bool LoadStudioModel( char const* pModelName, char const* pEntityType, CUtlBuffe
 			Warning("Error! %s using model \"%s\", which must be used on a dynamic entity (i.e. prop_physics). Deleted.\n", pEntityType, pModelName );
 		}
 		return false;
-	}
+	}*/
 
 	// ensure reset
 	pHdr->pVertexBase = NULL;
@@ -662,6 +662,7 @@ void EmitStaticProps()
 			}
 			build.m_nMinDXLevel = (unsigned short)IntForKey( &entities[i], "mindxlevel" );
 			build.m_nMaxDXLevel = (unsigned short)IntForKey( &entities[i], "maxdxlevel" );
+
 			AddStaticPropToLump( build );
 
 			// strip this ent from the .bsp file

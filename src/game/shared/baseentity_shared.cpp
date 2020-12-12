@@ -655,15 +655,15 @@ void CBaseEntity::SetPredictionRandomSeed( const CUserCmd *cmd )
 //------------------------------------------------------------------------------
 void CBaseEntity::DecalTrace( trace_t *pTrace, char const *decalName )
 {
-	int index = decalsystem->GetDecalIndexForName( decalName );
-	if ( index < 0 )
+	int indexD = decalsystem->GetDecalIndexForName( decalName );
+	if ( indexD < 0 )
 		return;
 
 	Assert( pTrace->m_pEnt );
 
 	CBroadcastRecipientFilter filter;
 	te->Decal( filter, 0.0, &pTrace->endpos, &pTrace->startpos,
-		pTrace->GetEntityIndex(), pTrace->hitbox, index );
+		pTrace->GetEntityIndex(), pTrace->hitbox, indexD );
 }
 
 //-----------------------------------------------------------------------------
@@ -1255,6 +1255,10 @@ void CBaseEntity::VPhysicsSetObject( IPhysicsObject *pPhysics )
 		Warning( "Overwriting physics object for %s\n", GetClassname() );
 	}
 	m_pPhysicsObject = pPhysics;
+	if ( m_pPhysicsObject )
+	{
+		m_flNonShadowMass = m_pPhysicsObject->GetMass();
+	}
 	if ( pPhysics && !m_pPhysicsObject )
 	{
 		CollisionRulesChanged();
@@ -1290,6 +1294,8 @@ bool CBaseEntity::VPhysicsInitSetup()
 	// If this entity already has a physics object, then it should have been deleted prior to making this call.
 	Assert(!m_pPhysicsObject);
 	VPhysicsDestroyObject();
+
+	m_flNonShadowMass = -1.0f;
 
 	// make sure absorigin / absangles are correct
 	return true;
@@ -1399,9 +1405,9 @@ bool CBaseEntity::IsBSPModel() const
 	if ( GetSolid() == SOLID_BSP )
 		return true;
 	
-	const model_t *model = modelinfo->GetModel( GetModelIndex() );
+	const model_t *pModel = modelinfo->GetModel( GetModelIndex() );
 
-	if ( GetSolid() == SOLID_VPHYSICS && modelinfo->GetModelType( model ) == mod_brush )
+	if ( GetSolid() == SOLID_VPHYSICS && modelinfo->GetModelType( pModel ) == mod_brush )
 		return true;
 
 	return false;

@@ -41,20 +41,17 @@ typedef enum {SIS_SUCCESS, SIS_FAILURE, SIS_NOTAVAIL} sndinitstat;
 
 #define SECONDARY_BUFFER_SIZE			0x10000		// output buffer size in bytes
 #define SECONDARY_BUFFER_SIZE_SURROUND	0x04000		// output buffer size in bytes, one per channel
-
-// PiMoN: shall I remove this or just #undef two remaining defines?
+/*
 #if !defined( NEW_DXSDK )
 // hack - need to include latest dsound.h
 #undef DSSPEAKER_5POINT1
 #undef DSSPEAKER_7POINT1
-#undef DSSPEAKER_7POINT1_SURROUND
-#undef DSSPEAKER_5POINT1_SURROUND
 #define DSSPEAKER_5POINT1		6
 #define DSSPEAKER_7POINT1		7
 #define DSSPEAKER_7POINT1_SURROUND 8
 #define DSSPEAKER_5POINT1_SURROUND 9
 #endif
-
+*/
 HRESULT (WINAPI *pDirectSoundCreate)(GUID FAR *lpGUID, LPDIRECTSOUND FAR *lplpDS, IUnknown FAR *pUnkOuter);
 
 extern void ReleaseSurround(void);

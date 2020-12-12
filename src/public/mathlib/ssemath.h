@@ -2742,6 +2742,15 @@ public:
 
 };
 
+inline FourVectors Madd( const FourVectors &a, const fltx4 &b, const FourVectors &c )	// a*b + c
+{
+	FourVectors ret;
+	ret.x = MaddSIMD( a.x, b, c.x );
+	ret.y = MaddSIMD( a.y, b, c.y );
+	ret.z = MaddSIMD( a.z, b, c.z );
+	return ret;
+}
+
 /// form 4 cross products
 inline FourVectors operator ^(const FourVectors &a, const FourVectors &b)
 {
@@ -2749,6 +2758,15 @@ inline FourVectors operator ^(const FourVectors &a, const FourVectors &b)
 	ret.x=SubSIMD(MulSIMD(a.y,b.z),MulSIMD(a.z,b.y));
 	ret.y=SubSIMD(MulSIMD(a.z,b.x),MulSIMD(a.x,b.z));
 	ret.z=SubSIMD(MulSIMD(a.x,b.y),MulSIMD(a.y,b.x));
+	return ret;
+}
+
+inline FourVectors operator-(const FourVectors &a, const FourVectors &b)
+{
+	FourVectors ret;
+	ret.x=SubSIMD(a.x,b.x);
+	ret.y=SubSIMD(a.y,b.y);
+	ret.z=SubSIMD(a.z,b.z);
 	return ret;
 }
 
@@ -2769,6 +2787,15 @@ inline FourVectors minimum(const FourVectors &a, const FourVectors &b)
 	ret.x=MinSIMD(a.x,b.x);
 	ret.y=MinSIMD(a.y,b.y);
 	ret.z=MinSIMD(a.z,b.z);
+	return ret;
+}
+
+FORCEINLINE FourVectors MaskedAssign( const fltx4 & ReplacementMask, const FourVectors & NewValue, const FourVectors & OldValue )
+{
+	FourVectors ret;
+	ret.x = MaskedAssign( ReplacementMask, NewValue.x, OldValue.x );
+	ret.y = MaskedAssign( ReplacementMask, NewValue.y, OldValue.y );
+	ret.z = MaskedAssign( ReplacementMask, NewValue.z, OldValue.z );
 	return ret;
 }
 

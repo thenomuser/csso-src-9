@@ -1,7 +1,7 @@
 [vpc crc file version 2]
 b9c20ec3 E:\csso-src\src\devtools\bin\vpc.exe
 _Nc_VS2013/vpcgame:csso_
-6af8d8a1 tier1.vpc
+00dd4e82 tier1.vpc
 30577f77 ..\vpc_scripts\source_lib_base.vpc
 d752cf80 ..\vpc_scripts\platform_dirs.vpc
 6c4a5ff1 ..\vpc_scripts\source_base.vpc

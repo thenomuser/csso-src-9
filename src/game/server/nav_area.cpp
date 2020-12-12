@@ -4650,9 +4650,16 @@ bool CNavArea::IsBlocked( int teamID, bool ignoreNavBlockers ) const
 //--------------------------------------------------------------------------------------------------------
 void CNavArea::MarkAsBlocked( int teamID, CBaseEntity *blocker, bool bGenerateEvent )
 {
-	if ( blocker && blocker->ClassMatches( "func_nav_blocker" ) )
+	if ( blocker )
 	{
-		m_attributeFlags |= NAV_MESH_NAV_BLOCKER;
+		if ( blocker->ClassMatches( "func_nav_blocker" )  )
+		{
+			m_attributeFlags |= NAV_MESH_NAV_BLOCKER;
+		}
+		else if ( blocker->ClassMatches( "prop_door_rotating" ) )
+		{
+			m_attributeFlags |= NAV_MESH_BLOCKED_PROPDOOR;
+		}
 	}
 
 	bool wasBlocked = false;
@@ -4710,6 +4717,53 @@ void CNavArea::MarkAsBlocked( int teamID, CBaseEntity *blocker, bool bGenerateEv
 				ConColorMsg( Color( 0, 255, 128, 255 ), "DUPE: non-entity blocked area %d\n", GetID() );
 			}
 		}
+	}
+}
+
+//--------------------------------------------------------------------------------------------------------
+void CNavArea::MarkAsUnblocked( int teamID, bool bGenerateEvent )
+{
+	m_attributeFlags &= ~NAV_MESH_NAV_BLOCKER;
+	m_attributeFlags &= ~NAV_MESH_BLOCKED_PROPDOOR;
+
+	for ( int i = 0; i < MAX_NAV_TEAMS; ++i )
+	{
+		m_isBlocked[i] = false;
+	}
+
+	bool wasBlocked = false;
+	if ( teamID == TEAM_ANY )
+	{
+		for ( int i = 0; i < MAX_NAV_TEAMS; ++i )
+		{
+			m_isBlocked[i] = false;
+		}
+	}
+	else
+	{
+		int teamIdx = teamID % MAX_NAV_TEAMS;
+		wasBlocked |= !!m_isBlocked[teamIdx];
+		m_isBlocked[teamIdx] = false;
+	}
+
+	if ( wasBlocked )
+	{
+		if ( bGenerateEvent )
+		{
+			IGameEvent * event = gameeventmanager->CreateEvent( "nav_blocked" );
+			if ( event )
+			{
+				event->SetInt( "area", m_id );
+				event->SetInt( "blocked", 0 );
+				gameeventmanager->FireEvent( event );
+			}
+		}
+
+		if ( nav_debug_blocked.GetBool() )
+		{
+			ConColorMsg( Color( 0, 128, 255, 255 ), "area %d is unblocked by a nav blocker\n", GetID() );
+		}
+		TheNavMesh->OnAreaUnblocked( this );
 	}
 }
 
@@ -4835,6 +4889,10 @@ void CNavArea::UpdateBlocked( bool force, int teamID )
 		{
 			UpdateBlockedFromNavBlockers();
 		}
+		return;
+	}
+	if ( ( m_attributeFlags & NAV_MESH_BLOCKED_PROPDOOR ) )
+	{
 		return;
 	}
 
