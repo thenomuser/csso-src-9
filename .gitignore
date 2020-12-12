@@ -46,6 +46,10 @@ gameui.lib
 stdshader_dx9.pdb
 stdshader_dx9.dll
 stdshader_dx9.lib
+hlmv.pdb
+hlmv.exe
+studiomdl.pdb
+studiomdl.exe
 
 client.so
 client.so.dbg
