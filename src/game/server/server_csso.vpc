@@ -24,7 +24,7 @@ $Configuration
 	}
 }
 
-$Project "Server (csso)"
+$Project "Server (CS:SO)"
 {
 	$Folder	"Source Files"
 	{

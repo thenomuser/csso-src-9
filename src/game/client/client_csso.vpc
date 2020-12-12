@@ -18,7 +18,7 @@ $Configuration
 	}
 }
 
-$Project "Client (csso)"
+$Project "Client (CS:SO)"
 {
 	$Folder "Replay"
 	{
