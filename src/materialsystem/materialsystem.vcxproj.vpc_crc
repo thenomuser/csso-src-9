@@ -1,0 +1,15 @@
+[vpc crc file version 2]
+5dbec75c ..\devtools\bin\vpc.exe
+_Nc_2013VS2013/vpcgame:valve_
+3231495e materialsystem.vpc
+4832e67a ..\vpc_scripts\source_dll_base.vpc
+d752cf80 ..\vpc_scripts\platform_dirs.vpc
+6c4a5ff1 ..\vpc_scripts\source_base.vpc
+715eb727 ..\vpc_scripts\source_dll_win32_base.vpc
+486b766d ..\vpc_scripts\version.vpc
+846102f0 ..\vpc_scripts\loadaddress.vpc
+3558d490 ..\vpc_scripts\source_dll_win32_debug.vpc
+80e251b2 ..\vpc_scripts\source_dll_win32_release.vpc
+1e941d94 ..\vpc_scripts\source_win32_base.vpc
+15cd25e0 ..\vpc_scripts\source_video_base.vpc
+ff659259 ..\vpc_scripts\definitions\win32_2010.def
