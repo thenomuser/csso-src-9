@@ -1812,7 +1812,7 @@ CBaseEntity* CCSPlayer::FindNextObserverTarget( bool bReverse )
 
 	// [jason] If we have no valid targets left (eg. last teammate dies in competitive mode )
 	//	then try to place the camera near any planted bomb 
-	if ( !pTarget )
+	/*if ( !pTarget )
 	{		
 		if ( g_PlantedC4s.Count() > 0 )
 		{
@@ -1828,7 +1828,7 @@ CBaseEntity* CCSPlayer::FindNextObserverTarget( bool bReverse )
 
 			return g_PlantedC4s[0];
 		}
-	}
+	}*/
 
 	return pTarget;
 }
