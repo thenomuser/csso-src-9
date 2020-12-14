@@ -153,6 +153,8 @@ extern ConVar mp_buy_anywhere;
 
 extern ConVar mp_use_official_map_factions;
 
+extern ConVar mp_respawn_immunitytime;
+
 ConVar mp_deathcam_skippable( "mp_deathcam_skippable", "1", FCVAR_REPLICATED, "Determines whether a player can early-out of the deathcam." );
 
 #define THROWGRENADE_COUNTER_BITS 3
@@ -404,6 +406,9 @@ IMPLEMENT_SERVERCLASS_ST( CCSPlayer, DT_CSPlayer )
 	SendPropBool( SENDINFO( m_bIsDefusing ) ),
 
 	SendPropBool( SENDINFO( m_bResumeZoom ) ),
+	SendPropBool( SENDINFO( m_bHasMovedSinceSpawn ) ),
+	SendPropFloat( SENDINFO( m_fImmuneToDamageTime ) ),
+	SendPropBool( SENDINFO( m_bImmunity ) ),
 	SendPropInt( SENDINFO( m_iLastZoom ), 8, SPROP_UNSIGNED ),
 
 #ifdef CS_SHIELD_ENABLED
@@ -564,6 +569,11 @@ CCSPlayer::CCSPlayer()
 	m_vLastHitLocationObjectSpace = Vector(0,0,0);
 
 	m_wasNotKilledNaturally = false;
+
+	m_fImmuneToDamageTime = 0.0f;
+	m_bImmunity = false;
+
+	m_bHasMovedSinceSpawn = false;
 
 	m_fNextMolotovDamageSoundTime = 0.0f;
 
@@ -1226,6 +1236,8 @@ void CCSPlayer::Spawn()
 	m_bTeamChanged	= false;
 	m_iOldTeam = TEAM_UNASSIGNED;
 
+	m_bHasMovedSinceSpawn = false;
+
 	m_iRadioMessages = 60;
 	m_flRadioTime = gpGlobals->curtime;
 
@@ -1266,6 +1278,25 @@ void CCSPlayer::Spawn()
 	m_cycleLatchTimer.Start( RandomFloat( 0.0f, CycleLatchInterval ) );
 
 	StockPlayerAmmo();
+
+	// Calculate timeout for immunity
+	float flImmuneTime = mp_respawn_immunitytime.GetFloat();
+
+	if ( flImmuneTime > 0 || CSGameRules()->IsWarmupPeriod() )
+	{
+		if ( CSGameRules()->IsWarmupPeriod() )
+		{
+			flImmuneTime = 3;
+		}
+
+		m_fImmuneToDamageTime = gpGlobals->curtime + flImmuneTime;
+		m_bImmunity = true;
+	}
+	else
+	{
+		m_fImmuneToDamageTime = 0.0f;
+		m_bImmunity = false;
+	}
 
 	m_bKilledByTaser = false;
 
@@ -1414,6 +1445,12 @@ void CCSPlayer::CreateRagdollEntity()
 
 int CCSPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 {
+	if ( m_bImmunity )
+	{
+		// No damage if immune
+		return 0;
+	}
+
 	// set damage type sustained
 	m_bitsDamageType |= info.GetDamageType();
 
@@ -2299,6 +2336,12 @@ private:
 
 int CCSPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 {
+	if ( m_bImmunity )
+	{
+		// No damage if immune
+		return 0;
+	}
+
 	CTakeDamageInfo info = inputInfo;
 
 	CBaseEntity *pInflictor = info.GetInflictor();
@@ -2427,7 +2470,10 @@ int CCSPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 		{
 			if ( pInflictor->GetTeamNumber() == GetTeamNumber() )
 			{
-				flDamage *= 0.35; // bullets hurt teammates less
+				if ( CSGameRules()->IsWarmupPeriod() )
+					flDamage = 0; // no friendlyfire in warmup
+				else
+					flDamage *= 0.35; // bullets hurt teammates less
 			}
 		}
 
@@ -2704,6 +2750,12 @@ bool CCSPlayer::IsHittingShield( const Vector &vecDirection, trace_t *ptr )
 	return false;
 }
 
+void CCSPlayer::ClearImmunity( void )
+{
+	// Fired a shot so no longer immune
+	m_bImmunity = false;
+	m_fImmuneToDamageTime = 0.0f;
+}
 
 void CCSPlayer::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator )
 {
@@ -2736,7 +2788,11 @@ void CCSPlayer::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, 
 
 	bool bHeadShot = false;
 
-	if ( bHitShield )
+	if ( m_bImmunity )
+	{
+		bShouldBleed = false;
+	}
+	else if ( bHitShield )
 	{
 		flDamage = 0;
 		bShouldBleed = false;
@@ -2952,6 +3008,10 @@ void CCSPlayer::AddAccountAward( int reason )
 
 void CCSPlayer::AddAccountAward( int reason, int amount, const CWeaponCSBase *pWeapon )
 {
+	// no awards in the warmup period
+	if ( CSGameRules() && CSGameRules()->IsWarmupPeriod() )
+		return;
+
 	if ( amount == 0 )
 		return;
 
@@ -4047,6 +4107,12 @@ bool CCSPlayer::CanPlayerBuy( bool display )
 	}
 
 	CCSGameRules* mp = CSGameRules();
+
+	// Don't allow buying in the last few seconds of warmup because everybody should be freezed, but sometimes people aren't
+	// also fixes buy on the very moment that round starts which might cause the bought weapon to spawn, but touched by the
+	// player in the actual match time next frame and have a powerful gun for the first pistol round.
+	if ( CSGameRules()->IsWarmupPeriod() && ( CSGameRules()->GetWarmupPeriodEndTime() - 3 < gpGlobals->curtime ) )
+		return false;
 
 	// is the player alive?
 	if ( m_lifeState != LIFE_ALIVE )
@@ -6216,7 +6282,7 @@ void CCSPlayer::GetIntoGame()
 		if( MPRules->m_flRestartRoundTime == 0.0f )
 		{
 			//Bomb target, no bomber and no bomb lying around.
-			if( MPRules->IsBombDefuseMap() && !MPRules->IsThereABomber() && !MPRules->IsThereABomb() )
+			if( !MPRules->IsWarmupPeriod() && MPRules->IsBombDefuseMap() && !MPRules->IsThereABomber() && !MPRules->IsThereABomb() )
 				MPRules->GiveC4(); //Checks for terrorists.
 		}
 
@@ -6604,7 +6670,7 @@ void CCSPlayer::State_PreThink_DEATH_ANIM()
 		}
 		else if(GetObserverMode() == OBS_MODE_FREEZECAM)
 		{
-			if ( m_bAbortFreezeCam && !mp_fadetoblack.GetBool() )
+			if ( m_bAbortFreezeCam && ( mp_forcecamera.GetInt() != OBS_ALLOW_NONE || CSGameRules()->IsWarmupPeriod() ) )
 			{
 				if ( IsAbleToInstantRespawn() )
 				{
@@ -6830,6 +6896,25 @@ void CCSPlayer::State_Enter_ACTIVE()
 
 void CCSPlayer::State_PreThink_ACTIVE()
 {
+	// Calculate timeout for immunity
+	if ( mp_respawn_immunitytime.GetFloat() > 0 || (CSGameRules() && CSGameRules()->IsWarmupPeriod()) )
+	{
+		if ( m_bImmunity )
+		{
+			if ( gpGlobals->curtime > m_fImmuneToDamageTime )
+			{
+				// Player immunity has timed out
+				ClearImmunity();
+
+			}
+			// or if we've moved and there's more than 1s of immunity left. Check for 1s because the above case adds 1s.
+			else if ( IsAbleToInstantRespawn() && m_bHasMovedSinceSpawn && (m_fImmuneToDamageTime - gpGlobals->curtime > 1.0f) )
+			{
+				m_fImmuneToDamageTime = gpGlobals->curtime + 1.0f;
+			}
+		}
+	}
+
 	// We only allow noclip here only because noclip is useful for debugging.
 	// It would be nice if the noclip command set some flag so we could tell that they
 	// did it intentionally.
@@ -8240,7 +8325,7 @@ void CCSPlayer::DropWeapons( bool fromDeath, bool friendlyFire )
 //=============================================================================
 
 
-	if( HasDefuser() )
+	if( HasDefuser() && !CSGameRules()->IsWarmupPeriod() )
 	{
 		//Drop an item_defuser
 		Vector vForward, vRight;
@@ -9894,6 +9979,9 @@ bool CCSPlayer::CanControlBot( CCSBot *pBot, bool bSkipTeamCheck )
 	if ( CSGameRules()->IsFreezePeriod() )
 		return false;
 
+	if ( CSGameRules()->IsWarmupPeriod() )
+		return false;
+
 	if ( !bSkipTeamCheck && IsAlive() )
 		return false;
 
@@ -10023,6 +10111,9 @@ bool CCSPlayer::TakeControlOfBot( CCSBot *pBot, bool bSkipTeamCheck )
 	m_bHasControlledBotThisRound = true;
 	pBot->m_bHasBeenControlledByPlayerThisRound = true;
 
+	m_fImmuneToDamageTime = 0;
+	m_bImmunity = false;
+
 	m_bTeamChanged = hasChangedTeamTemp; // dkorus: we want m_bTeamChanged to persist past the Spawn() call.  This is how we acomplish this
 
 	m_flStamina = flBotStamina;		// FROM BOT
@@ -10033,6 +10124,9 @@ bool CCSPlayer::TakeControlOfBot( CCSBot *pBot, bool bSkipTeamCheck )
 	m_lifeState = LIFE_ALIVE;
 
 	m_bDuckOverride = false;
+
+	// afk check disabled for players whose first action is taking over a bot
+	m_bHasMovedSinceSpawn = true;
 
 	SetMoveType( eBotMoveType );
 	m_Local.m_bDucked = bBotDucked;

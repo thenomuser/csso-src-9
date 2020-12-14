@@ -880,6 +880,10 @@ void CWeaponCSBase::ItemPostFrame_ProcessPrimaryAttack( CCSPlayer *pPlayer )
 		// there's a bit of a cool-off before you can alt-fire at normal alt-fire rate
 		m_flNextSecondaryAttack = gpGlobals->curtime + (GetCSWpnData().m_flCycleTimeAlt * 1.7f);
 	}
+
+#ifndef CLIENT_DLL
+	pPlayer->ClearImmunity();
+#endif
 }
 
 bool CWeaponCSBase::ItemPostFrame_ProcessZoomAction( CCSPlayer *pPlayer )
@@ -1047,6 +1051,11 @@ bool CWeaponCSBase::ItemPostFrame_ProcessSecondaryAttack( CCSPlayer *pPlayer )
 	{
 		CallSecondaryAttack();
 	}
+
+#ifndef CLIENT_DLL
+	pPlayer->ClearImmunity();
+#endif
+
 	return true;
 }
 

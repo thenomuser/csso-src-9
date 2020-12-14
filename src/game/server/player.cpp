@@ -71,6 +71,7 @@
 #include "ai_speech.h"
 #ifdef CSTRIKE_DLL
 #include "weapon_c4.h"
+#include "cs_gamerules.h"
 #endif
 
 #if defined USES_ECON_ITEMS
@@ -5310,6 +5311,15 @@ void CBasePlayer::NotifyNearbyRadiationSource( float flRange )
 
 void CBasePlayer::AllowImmediateDecalPainting()
 {
+#ifdef CSTRIKE_DLL
+	// No decal expediting during warmup
+	if ( CSGameRules() )
+	{
+		if ( CSGameRules()->IsWarmupPeriod() )
+			return;
+	}
+#endif
+
 	m_flNextDecalTime = gpGlobals->curtime;
 }
 

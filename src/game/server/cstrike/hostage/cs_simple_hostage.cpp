@@ -236,6 +236,9 @@ bool CHostage::KeyValue( const char *szKeyName, const char *szValue )
 //-----------------------------------------------------------------------------------------------------
 void CHostage::Spawn( void )
 {
+	if ( CSGameRules()->IsWarmupPeriod() && !mp_hostages_spawn_same_every_round.GetBool() )
+		return;
+
 	// remove hostage spawns that exceeded MAX_HOSTAGES and weren't added to g_Hostages
 	if ( m_bRemove )
 	{
@@ -1351,6 +1354,16 @@ void CHostage::HostageUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 	CCSPlayer *pPlayer = ToCSPlayer( pActivator );
 	if ( !pPlayer )
 		return;
+
+	if ( CSGameRules() && CSGameRules()->IsWarmupPeriod() )
+	{
+		if ( pPlayer->m_iNextTimeCheck < gpGlobals->curtime )
+		{
+			ClientPrint( pPlayer, HUD_PRINTCENTER, "#Cstrike_TitlesTXT_Cannot_Move_Hostages_Warmup" );
+			pPlayer->m_iNextTimeCheck = gpGlobals->curtime + 1.f;
+		}
+		return;
+	}
 
 	// limit use range
 	float useRange = 1000.0f;

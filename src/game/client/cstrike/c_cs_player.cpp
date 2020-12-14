@@ -859,6 +859,9 @@ IMPLEMENT_CLIENTCLASS_DT( C_CSPlayer, DT_CSPlayer, CCSPlayer )
 	RecvPropInt( RECVINFO( m_ArmorValue ) ),
 	RecvPropBool( RECVINFO( m_bIsDefusing ) ),
 	RecvPropBool( RECVINFO( m_bResumeZoom ) ),
+	RecvPropFloat( RECVINFO( m_fImmuneToDamageTime ) ),
+	RecvPropBool( RECVINFO( m_bImmunity ) ),
+	RecvPropBool( RECVINFO( m_bHasMovedSinceSpawn ) ),
 	RecvPropInt( RECVINFO( m_iLastZoom ) ),
 
 #ifdef CS_SHIELD_ENABLED
@@ -1573,12 +1576,38 @@ void C_CSPlayer::ClientThink()
 
 	UpdateAddonModels();
 
+	UpdateHostageCarryModels();
+
 	UpdateIDTarget();
 
 	if ( gpGlobals->curtime >= m_fNextThinkPushAway )
 	{
 		PerformObstaclePushaway( this );
 		m_fNextThinkPushAway =  gpGlobals->curtime + PUSHAWAY_THINK_INTERVAL;
+	}
+
+	ConVarRef mp_respawn_immunitytime( "mp_respawn_immunitytime" );
+	float flImmuneTime = mp_respawn_immunitytime.GetFloat();
+	if ( flImmuneTime > 0 || CSGameRules()->IsWarmupPeriod() )
+	{
+		if ( m_bImmunity )
+		{
+			SetRenderMode( kRenderTransAlpha );
+			SetRenderColorA( 128 );
+		}
+		else
+		{
+			SetRenderMode( kRenderNormal, true );
+			SetRenderColorA( 255 );
+		}
+	}
+	else
+	{
+		if ( GetRenderColor().a < 255 )
+		{
+			SetRenderMode( kRenderNormal, true );
+			SetRenderColorA( 255 );
+		}
 	}
 
 	// NVNT - check for spectating forces

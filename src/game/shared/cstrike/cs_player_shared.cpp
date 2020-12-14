@@ -158,6 +158,12 @@ void DispatchEffect( const char *pName, const CEffectData &data );
 
 bool CCSPlayer::IsAbleToInstantRespawn( void )
 {
+	if ( CSGameRules() )
+	{
+		if ( CSGameRules()->IsWarmupPeriod() )
+			return true;
+	}
+
 	// if we use respawn waves AND the next respawn wave is past AND our team is able to respawn OR it is the warmup period
 	return (	CSGameRules() && ( ( mp_respawn_on_death_ct.GetBool() && GetTeamNumber() == TEAM_CT ) || 
 		( mp_respawn_on_death_t.GetBool() && GetTeamNumber() == TEAM_TERRORIST ) ) );
