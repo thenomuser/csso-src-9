@@ -52,6 +52,18 @@ enum BotGUIChatterType
 static const char *chatterArg[] = { "normal", "minimal", "radio", "off", NULL };
 
 
+// for bot chatter combo box
+enum BotGUIQuotaModeType
+{
+	BOT_GUI_QUOTA_MODE_NORMAL = 0,
+	BOT_GUI_QUOTA_MODE_FILL = 1,
+	BOT_GUI_QUOTA_MODE_MATCH = 2,
+};
+
+// these must correlate with above enum
+static const char *quotaModeArg[] = { "normal", "fill", "match", NULL };
+
+
 extern void UTIL_StripInvalidCharacters( char *pszInput );
 
 
@@ -87,7 +99,25 @@ void CCreateMultiplayerGameBotPage::SetChatterCombo( const char *chatter )
 	}
 	else
 	{
-		m_joinTeamCombo->ActivateItemByRow( BOT_GUI_CHATTER_NORMAL );
+		m_chatterCombo->ActivateItemByRow( BOT_GUI_CHATTER_NORMAL );
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CCreateMultiplayerGameBotPage::SetQuotaModeCombo( const char *mode )
+{
+	if (mode)
+	{
+		for( int i=0; quotaModeArg[i]; ++i )
+			if (!stricmp( mode, quotaModeArg[i] ))
+			{
+				m_quotaModeCombo->ActivateItemByRow( i );
+				return;
+			}
+	}
+	else
+	{
+		m_quotaModeCombo->ActivateItemByRow( BOT_GUI_QUOTA_MODE_NORMAL );
 	}
 }
 
@@ -129,6 +159,13 @@ CCreateMultiplayerGameBotPage::CCreateMultiplayerGameBotPage( vgui::Panel *paren
 	m_chatterCombo->AddItem( "#Cstrike_Bot_Chatter_Radio", NULL );
 	m_chatterCombo->AddItem( "#Cstrike_Bot_Chatter_Off", NULL );
 
+	// set up quota mode combo box
+	// NOTE: If order of AddItem is changed, update the associated enum
+	m_quotaModeCombo = new ComboBox( this, "BotQuotaModeCombo", 3, false );
+	m_quotaModeCombo->AddItem( "#Cstrike_Bot_Quota_Mode_Normal", NULL );
+	m_quotaModeCombo->AddItem( "#Cstrike_Bot_Quota_Mode_Fill", NULL );
+	m_quotaModeCombo->AddItem( "#Cstrike_Bot_Quota_Mode_Match", NULL );
+
 	// create text entry fields for quota and prefix
 	m_prefixEntry = new TextEntry( this, "BotPrefixEntry" );
 
@@ -152,6 +189,7 @@ CCreateMultiplayerGameBotPage::CCreateMultiplayerGameBotPage( vgui::Panel *paren
 
 	SetJoinTeamCombo( botKeys->GetString( "bot_join_team", "any" ) );
 	SetChatterCombo( botKeys->GetString( "bot_chatter", "normal" ) );
+	SetQuotaModeCombo( botKeys->GetString( "bot_quota_mode", "normal" ) );
 
 	// set bot_prefix
 	const char *prefix = botKeys->GetString( "bot_prefix" );
@@ -218,6 +256,9 @@ void CCreateMultiplayerGameBotPage::OnApplyChanges()
 
 	// set bot_chatter
 	UpdateValue( m_pSavedData, "bot_chatter", chatterArg[ m_chatterCombo->GetActiveItem() ] );
+
+	// set bot_quota_mode
+	UpdateValue( m_pSavedData, "bot_quota_mode", chatterArg[ m_quotaModeCombo->GetActiveItem() ] );
 
 	// set bot_prefix
 	#define BUF_LENGTH 256
