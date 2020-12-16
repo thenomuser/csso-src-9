@@ -38,6 +38,8 @@ public:
 
 		m_bInLanding = false;
 		m_flLandingTime = -1.0f;
+
+		m_flLastDuckTime = -1.0f;
 	}
 
 	unsigned char			m_chAreaBits[MAX_AREA_STATE_BYTES];				// Area visibility flags.
@@ -50,6 +52,7 @@ public:
 
 	bool					m_bDucked;
 	bool					m_bDucking;
+	float					m_flLastDuckTime;	// last time the player pressed duck
 	bool					m_bInDuckJump;
 	float					m_flDucktime;
 	float					m_flDuckJumpTime;

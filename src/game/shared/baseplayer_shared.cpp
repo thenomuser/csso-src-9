@@ -2197,6 +2197,9 @@ void CBasePlayer::SharedSpawn()
 	if(IsLocalPlayer() &&haptics)
 		haptics->LocalPlayerReset();
 #endif
+
+	m_flDuckAmount = 0;
+	m_flDuckSpeed = CS_PLAYER_DUCK_SPEED_IDEAL;
 }
 
 

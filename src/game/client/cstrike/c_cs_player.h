@@ -103,6 +103,7 @@ public:
 	virtual bool Interpolate( float currentTime );
 	virtual void UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity  );
 	virtual surfacedata_t * GetFootstepSurface( const Vector &origin, const char *surfaceName );
+	virtual void PlayClientJumpSound( void );
 	virtual void ValidateModelIndex( void );
 
 	virtual int	GetMaxHealth() const;
@@ -291,6 +292,7 @@ public:
 	// Used to control animation state.
 	Activity m_Activity;
 
+	CNetworkVar( bool, m_bIsWalking );
 	// Predicted variables.
 	CNetworkVar( bool, m_bResumeZoom );
 	CNetworkVar( int , m_iLastZoom ); // after firing a shot, set the FOV to 90, and after showing the animation, bring the FOV back to last zoom level.
@@ -336,7 +338,8 @@ public:
     //CNetworkVar( bool, m_bPickedUpDefuser );
     //CNetworkVar( bool, m_bDefusedWithPickedUpKit );
 
-    CNetworkVar( float, m_flVelocityModifier );
+	CNetworkVar( float, m_flVelocityModifier );
+	CNetworkVar( float, m_flGroundAccelLinearFracLastTime );
 
 	bool		m_bDetected;
 

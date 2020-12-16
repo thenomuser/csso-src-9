@@ -389,6 +389,8 @@ IMPLEMENT_SERVERCLASS_ST( CCSPlayer, DT_CSPlayer )
 	SendPropBool( SENDINFO( m_bIsGrabbingHostage ) ),
 	SendPropEHandle( SENDINFO( m_hCarriedHostage ) ),
 	SendPropEHandle( SENDINFO( m_hCarriedHostageProp ) ),
+	SendPropBool( SENDINFO( m_bIsWalking ) ),
+	SendPropFloat( SENDINFO( m_flGroundAccelLinearFracLastTime ), 0, SPROP_CHANGES_OFTEN ),
 
 	//=============================================================================
 	// HPE_BEGIN:
@@ -1183,11 +1185,9 @@ void CCSPlayer::Spawn()
 	m_bIsDefusing = false;
 	m_bIsGrabbingHostage = false;
 
-	//=============================================================================
-	// HPE_BEGIN
-	// [dwenger] Reset hostage-related variables
-	//=============================================================================
+	m_bIsWalking = false;
 
+	// [dwenger] Reset hostage-related variables
 	m_bIsRescuing = false;
 	m_bInjuredAHostage = false;
 	m_iNumFollowers = 0;
@@ -1197,10 +1197,6 @@ void CCSPlayer::Spawn()
 	{
 		m_wasNotKilledNaturally = false;
 	}
-
-	//=============================================================================
-	// HPE_END
-	//=============================================================================
 
 	m_iShotsFired = 0;
 	m_iDirection = 0;
@@ -1219,6 +1215,7 @@ void CCSPlayer::Spawn()
 	ClearFlashbangScreenFade();
 
 	m_flVelocityModifier = 1.0f;
+	m_flGroundAccelLinearFracLastTime = 0.0f;
 
 	ResetStamina();
 
@@ -10011,6 +10008,7 @@ bool CCSPlayer::TakeControlOfBot( CCSBot *pBot, bool bSkipTeamCheck )
 	const bool bBotDucking = pBot->m_Local.m_bDucking;
 	const bool bBotFL_DUCKING = (pBot->GetFlags() & FL_DUCKING ) != 0;
 	const bool bBotFL_ANIMDUCKING = ( pBot->GetFlags() & FL_ANIMDUCKING ) != 0;
+	const float flBotDuckAmount = pBot->m_flDuckAmount;
 	const MoveType_t eBotMoveType = pBot->GetMoveType();
 
 
@@ -10139,6 +10137,7 @@ bool CCSPlayer::TakeControlOfBot( CCSBot *pBot, bool bSkipTeamCheck )
 		AddFlag( FL_ANIMDUCKING );
 	else
 		RemoveFlag( FL_ANIMDUCKING );
+	m_flDuckAmount = flBotDuckAmount;
 
 	pBot->DispatchUpdateTransmitState();
 	DispatchUpdateTransmitState();

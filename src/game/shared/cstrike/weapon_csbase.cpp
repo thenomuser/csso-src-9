@@ -1162,7 +1162,16 @@ float CWeaponCSBase::GetInaccuracy() const
 
 	if ( flMovementInaccuracyScale > 0.0f )
 	{
-		flMovementInaccuracyScale = powf( flMovementInaccuracyScale, float( 0.25 ) );
+		// power curve only applies at speeds greater than walk
+		if ( pPlayer->m_bIsWalking )
+		{
+			//flMovementInaccuracyScale *= 1.0;	// reduce inaccuracy when walking or slower. This is commented out because at 1.0, it's a noop but preserved in case a different value is desired.
+			//flMovementInaccuracyScale = powf( flMovementInaccuracyScale, float( 0.85 ) );
+		}
+		else
+		{
+			flMovementInaccuracyScale = powf( flMovementInaccuracyScale, float( 0.25 ));
+		}
 
 		fAccuracy += flMovementInaccuracyScale * weaponInfo.m_fInaccuracyMove[m_weaponMode];
 	}

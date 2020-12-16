@@ -1463,15 +1463,14 @@ void CCSPlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigi
 	if ( IsBot() && IsDormant() )
 		return;
 
-	if ( !IsAlive() )
+	if (!IsAlive())
 		return;
 
 	float speedSqr = vecVelocity.LengthSqr();
 
-	//float flWalkSpeed = (CS_PLAYER_SPEED_RUN * CS_PLAYER_SPEED_WALK_MODIFIER);
-	float flWalkSpeed = 150.0; // legacy value
+	float flWalkSpeed = (CS_PLAYER_SPEED_RUN * CS_PLAYER_SPEED_WALK_MODIFIER);
 
-	if ( (speedSqr < flWalkSpeed * flWalkSpeed) )
+	if ( ( speedSqr < flWalkSpeed * flWalkSpeed ) || m_bIsWalking )
 	{
 		if ( speedSqr < 10.0 )
 		{
@@ -1485,7 +1484,7 @@ void CCSPlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigi
 		return; // player is not running, no footsteps
 	}
 
-	BaseClass::UpdateStepSound( psurface, vecOrigin, vecVelocity );
+	BaseClass::UpdateStepSound( psurface, vecOrigin, vecVelocity  );
 }
 
 
