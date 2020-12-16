@@ -10196,7 +10196,7 @@ bool CCSPlayer::TakeControlOfBot( CCSBot *pBot, bool bSkipTeamCheck )
 		
 			CBaseViewModel *vm = pBot->GetViewModel( HOSTAGE_VIEWMODEL );
 			UTIL_Remove( vm );
-			pBot->m_hViewModel.Set( 2, 0 );
+			pBot->m_hViewModel.Set( HOSTAGE_VIEWMODEL, 0 );
 		}
 	}
 

@@ -1411,7 +1411,7 @@ void CCSPlayer::CreateWeaponTracer( Vector vecStart, Vector vecEnd )
 			bUseObserverTarget = true;
 		}
 
-		C_BaseViewModel* pViewModel = GetViewModel( 0 );
+		C_BaseViewModel* pViewModel = GetViewModel( WEAPON_VIEWMODEL );
 
 		if ( pWeapon && pWeapon->GetOwner() && pWeapon->GetOwner()->IsDormant() )
 		{
